@@ -10,7 +10,7 @@ fi
 
 if [[ ! -d "$STAGEDIR" ]]
 then
-  echo "    Did you run recvover-machine-01-prepare-stage?"
+  echo "    Did you run recover-machine-01-prepare-stage?"
   exit 1
 fi
 
