@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+
+if [[ ! -r "recover-unit-00-LOCALENV" ]]
+then
+  echo "    Create recover-unit-00-LOCALENV file (see recover-unit-00-LOCALENV.sample)"
+  exit
+else
+  source recover-unit-00-LOCALENV
+fi
+
+if [[ -z "$STAGEDIR" ]]
+then
+  export STAGEDIR="./recover-unit_stage"
+fi
+
+if [[ -d "$STAGEDIR" ]]
+then
+  echo "    Moving old stage out of the way"
+  mv $STAGEDIR/ ${STAGEDIR}.$(date +%s)/
+fi
+echo "    Making new stage directory"
+mkdir -p  $STAGEDIR
+ls    -ld $STAGEDIR

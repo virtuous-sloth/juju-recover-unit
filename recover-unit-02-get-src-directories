@@ -1,0 +1,25 @@
+#!/usr/bin/bash
+
+if [[ ! -r "recover-unit-00-LOCALENV" ]]
+then
+  echo "    Create recover-unit-00-LOCALENV file (see recover-unit-00-LOCALENV.sample)"
+  exit
+else
+  source recover-unit-00-LOCALENV
+fi
+
+if [[ ! -d "$STAGEDIR" ]]
+then
+  echo "    Did you run recvover-unit-01-prepare-stage?"
+  exit 1
+fi
+
+echo "    Archive source directories on source machine"
+juju ssh "$SRCUNIT_SLASH" cat /etc/hostname
+juju ssh "$SRCUNIT_SLASH" sudo tar -C /var/lib/juju/agents/$SRCUNIT_DASH -c${V}f /tmp/src_var_lib_juju_agents_${SRCUNIT_DASH}.tar      ./
+juju ssh "$SRCUNIT_SLASH" sudo tar -C /etc/systemd/system                -c${V}f /tmp/src_etc_systemd_system_jujud-${SRCUNIT_DASH}.tar ./jujud-${SRCUNIT_DASH}-exec-start.sh ./jujud-${SRCUNIT_DASH}.service
+juju ssh "$SRCUNIT_SLASH" ls -l /tmp/src_*.tar
+echo "    Retrieve source directory archives"
+juju scp "$SRCUNIT_SLASH":/tmp/src_var_lib_juju_agents_${SRCUNIT_DASH}.tar      $STAGEDIR/02_src_var_lib_juju_agents_${SRCUNIT_DASH}.tar
+juju scp "$SRCUNIT_SLASH":/tmp/src_etc_systemd_system_jujud-${SRCUNIT_DASH}.tar $STAGEDIR/02_src_etc_systemd_system_jujud-${SRCUNIT_DASH}.tar
+ls -l $STAGEDIR/02_src_*.tar
