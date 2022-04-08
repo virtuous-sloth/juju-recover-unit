@@ -1,28 +1,28 @@
 #!/usr/bin/bash
 
-if [[ ! -r recover-unit-00-LOCALENV ]]
+if [[ ! -r recover-machine-00-LOCALENV ]]
 then
-  echo "    Create recover-unit-00-LOCALENV file (see recover-unit-00-LOCALENV.sample)"
+  echo "    Create recover-machine-00-LOCALENV file (see recover-machine-00-LOCALENV.sample)"
   exit
 else
-  source recover-unit-00-LOCALENV
+  source recover-machine-00-LOCALENV
 fi
 
-if [[ ! -r $STAGEDIR/02_src_var_lib_juju_agents_${SRCUNIT_DASH}.tar || \
-      ! -r $STAGEDIR/02_src_etc_systemd_system_jujud-${SRCUNIT_DASH}.tar ]]
+if [[ ! -r $STAGEDIR/02_src_var_lib_juju_agents_${SRCMACHINE_DASH}.tar || \
+      ! -r $STAGEDIR/02_src_etc_systemd_system_jujud-${SRCMACHINE_DASH}.tar ]]
 then
-  echo "    Have you run recover-unit-02-get-src-directories?"
+  echo "    Have you run recover-machine-02-get-src-directories?"
   echo "    Can't find source archives in $STAGEDIR"
   ls -l $STAGEDIR
   exit 1
 fi
 
 echo "    Make target directories"
-mkdir -p $STAGEDIR/03_tgt_var_lib_juju_agents_${TGTUNIT_DASH}
-mkdir -p $STAGEDIR/03_tgt_etc_systemd_system_jujud_${TGTUNIT_DASH}
+mkdir -p $STAGEDIR/03_tgt_var_lib_juju_agents_${TGTMACHINE_DASH}
+mkdir -p $STAGEDIR/03_tgt_etc_systemd_system_jujud_${TGTMACHINE_DASH}
 echo "    Extract source directory archives into target directories"
-tar -C $STAGEDIR/03_tgt_var_lib_juju_agents_${TGTUNIT_DASH}      -x${V}f $STAGEDIR/02_src_var_lib_juju_agents_${SRCUNIT_DASH}.tar 
-tar -C $STAGEDIR/03_tgt_etc_systemd_system_jujud_${TGTUNIT_DASH} -x${V}f $STAGEDIR/02_src_etc_systemd_system_jujud-${SRCUNIT_DASH}.tar 
-ls -l  $STAGEDIR/03_tgt_var_lib_juju_agents_${TGTUNIT_DASH}
-ls -l  $STAGEDIR/03_tgt_etc_systemd_system_jujud_${TGTUNIT_DASH}
+tar -C $STAGEDIR/03_tgt_var_lib_juju_agents_${TGTMACHINE_DASH}      -x${V}f $STAGEDIR/02_src_var_lib_juju_agents_${SRCMACHINE_DASH}.tar 
+tar -C $STAGEDIR/03_tgt_etc_systemd_system_jujud_${TGTMACHINE_DASH} -x${V}f $STAGEDIR/02_src_etc_systemd_system_jujud-${SRCMACHINE_DASH}.tar 
+ls -l  $STAGEDIR/03_tgt_var_lib_juju_agents_${TGTMACHINE_DASH}
+ls -l  $STAGEDIR/03_tgt_etc_systemd_system_jujud_${TGTMACHINE_DASH}
 echo "    Edit target files"

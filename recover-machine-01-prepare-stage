@@ -1,16 +1,16 @@
 #!/usr/bin/bash
 
-if [[ ! -r "recover-unit-00-LOCALENV" ]]
+if [[ ! -r "recover-machine-00-LOCALENV" ]]
 then
-  echo "    Create recover-unit-00-LOCALENV file (see recover-unit-00-LOCALENV.sample)"
+  echo "    Create recover-machine-00-LOCALENV file (see recover-machine-00-LOCALENV.sample)"
   exit
 else
-  source recover-unit-00-LOCALENV
+  source recover-machine-00-LOCALENV
 fi
 
 if [[ -z "$STAGEDIR" ]]
 then
-  export STAGEDIR="./recover-unit_stage"
+  export STAGEDIR="./recover-machine_stage"
 fi
 
 if [[ -d "$STAGEDIR" ]]

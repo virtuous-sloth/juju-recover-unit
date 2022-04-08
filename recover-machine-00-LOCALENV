@@ -1,11 +1,11 @@
 export STAGEDIR="./_stage"
 export APP='canonical-livepatch'
 
-export SRCUNIT_SLASH="$APP/2"
-export SRCUNIT_DASH=unit-$(echo $SRCUNIT_SLASH | tr / -)
+export SRCMACHINE_SLASH="$APP/2"
+export SRCMACHINE_DASH=machine-$(echo $SRCMACHINE_SLASH | tr / -)
 
-export TGTUNIT_SLASH="$APP/2"
-export TGTUNIT_DASH=unit-$(echo $TGTUNIT_SLASH | tr / -)
+export TGTMACHINE_SLASH="$APP/2"
+export TGTMACHINE_DASH=machine-$(echo $TGTMACHINE_SLASH | tr / -)
 
 if [[ ! -z "$DEBUG" ]]
 then
