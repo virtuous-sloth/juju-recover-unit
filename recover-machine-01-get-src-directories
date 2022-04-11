@@ -7,7 +7,6 @@ then
 fi
 
 echo -e "\n    Archive source directories on source machine"
-juju ssh "$RECOVERY_SRCMACHINENUM" cat /etc/hostname
 juju ssh "$RECOVERY_SRCMACHINENUM" sudo tar -C      /var/lib \
                                             -c${V}f /tmp/src_var_lib.tar \
                                             ./juju
@@ -51,5 +50,7 @@ sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_var_lib \
          -x${V}f $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
 sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system \
          -x${V}f $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
+echo "$RECOVERY_STAGEDIR/01_SRC_var_lib:"
 ls -l $RECOVERY_STAGEDIR/01_SRC_var_lib
+echo "$RECOVERY_STAGEDIR/01_SRC_etc_systemd_system:"
 ls -l $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system
