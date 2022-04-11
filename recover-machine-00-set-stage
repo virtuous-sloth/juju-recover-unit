@@ -1,0 +1,65 @@
+#!/usr/bin/bash
+
+if [[ -z "$RECOVERY_STAGEDIR" ]]
+then
+  export RECOVERY_STAGEDIR="./_stage"
+fi
+
+if [[ -d "$RECOVERY_STAGEDIR" ]]
+then
+  timestamp=$(stat --format %y $RECOVERY_STAGEDIR | tr ' :' '_-')
+  echo -e "\n    Move old stage directory $RECOVERY_STAGEDIR out of the way to ${RECOVERY_STAGEDIR}.${timestamp}"
+  mv $RECOVERY_STAGEDIR/ ${RECOVERY_STAGEDIR}.${timestamp}
+  ls -ld ${RECOVERY_STAGEDIR}.${timestamp}
+fi
+echo -e "\n    Make new stage directory"
+mkdir -p  $RECOVERY_STAGEDIR
+ls    -ld $RECOVERY_STAGEDIR
+
+echo -e "\n    Get juju status"
+juju status --format json > $RECOVERY_STAGEDIR/00-status.json
+ls -l $RECOVERY_STAGEDIR/00-status.json
+
+echo -e "\n    Determine application that is stuck installing"
+RECOVERY_APPLICATION=$(cat $RECOVERY_STAGEDIR/00-status.json \
+             | jq -r '.applications[]
+                     | select(."application-status".message == "installing agent")."charm-name"
+                     ' \
+             )
+echo $RECOVERY_APPLICATION
+
+echo -e "\n    Determine target machine with application installing agent"
+RECOVERY_TGTMACHINENUM=$(cat $RECOVERY_STAGEDIR/00-status.json \
+               | jq -r '.applications[]?.units[]?
+                       | select(.subordinates != null)
+                       | select(.subordinates[]."workload-status".message == "installing agent").machine
+                       ' \
+               )
+echo $RECOVERY_TGTMACHINENUM
+
+echo -e "\n    Determine source machine with application active"
+RECOVERY_SRCMACHINENUM=$(cat $RECOVERY_STAGEDIR/00-status.json \
+               | jq -r '.applications[]?.units[]?
+                       | select(.subordinates != null)
+                       | select(.subordinates[]."workload-status".current == "active").machine
+                       ' \
+               | tail -1
+               )
+echo $RECOVERY_SRCMACHINENUM
+
+RECOVERY_TGTMACHINE=machine-$RECOVERY_TGTMACHINENUM
+RECOVERY_SRCMACHINE=machine-$RECOVERY_SRCMACHINENUM
+
+echo -e "\n    Populate local environment file"
+cat <<END > $RECOVERY_STAGEDIR/00-LOCALENV
+export RECOVERY_STAGEDIR=$RECOVERY_STAGEDIR
+export RECOVERY_APPLICATION=$RECOVERY_APPLICATION
+export RECOVERY_TGTMACHINENUM=$RECOVERY_TGTMACHINENUM
+export RECOVERY_SRCMACHINENUM=$RECOVERY_SRCMACHINENUM
+export RECOVERY_TGTMACHINE=$RECOVERY_TGTMACHINE
+export RECOVERY_SRCMACHINE=$RECOVERY_SRCMACHINE
+END
+cat $RECOVERY_STAGEDIR/00-LOCALENV
+
+echo -e "\n    Run following before step 01:"
+echo -e "source $RECOVERY_STAGEDIR/00-LOCALENV"

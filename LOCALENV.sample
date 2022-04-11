@@ -1,8 +1,0 @@
- export STAGEDIR="./stage"
- export APP='canonical-livepatch'
-
- export SRCUNIT_SLASH="$APP/2"
- export SRCUNIT_DASH=unit-$(echo $SRCUNIT_SLASH | tr / -)
-
- export TGTUNIT_SLASH="$APP/2"
- export TGTUNIT_DASH=unit-$(echo $TGTUNIT_SLASH | tr / -)

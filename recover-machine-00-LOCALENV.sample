@@ -1,8 +1,0 @@
-export STAGEDIR="./recover-machine_stage"
-export APP='canonical-livepatch'
-
-export SRCMACHINE_SLASH="$APP/2"
-export SRCMACHINE_DASH=machine-$(echo $SRCMACHINE_SLASH | tr / -)
-
-export TGTMACHINE_SLASH="$APP/2"
-export TGTMACHINE_DASH=machine-$(echo $TGTMACHINE_SLASH | tr / -)
