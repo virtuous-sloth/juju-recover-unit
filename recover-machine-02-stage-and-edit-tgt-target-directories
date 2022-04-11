@@ -32,11 +32,11 @@ sudo rm -rf $RECOVERY_STAGEDIR/02_tgt_var_lib/juju/nonce.txt
 sudo mv -f  $RECOVERY_STAGEDIR/02_tgt_var_lib/juju/agents/${RECOVERY_SRCMACHINE} $RECOVERY_STAGEDIR/02_tgt_var_lib/juju/agents/${RECOVERY_TGTMACHINE}
 sudo mv -f  $RECOVERY_STAGEDIR/02_tgt_var_lib/juju/tools/${RECOVERY_SRCMACHINE}  $RECOVERY_STAGEDIR/02_tgt_var_lib/juju/tools/${RECOVERY_TGTMACHINE}
 sudo sudo sed -i "s/${RECOVERY_SRCMACHINE}/${RECOVERY_TGTMACHINE}/g" $RECOVERY_STAGEDIR/02_tgt_var_lib/juju/agents/${RECOVERY_TGTMACHINE}/agent.conf
-diff --recursive --unified $RECOVERY_STAGEDIR/01_src_var_lib $RECOVERY_STAGEDIR/02_tgt_var_lib
+sudo diff --recursive --unified --no-dereference $RECOVERY_STAGEDIR/01_src_var_lib $RECOVERY_STAGEDIR/02_tgt_var_lib
 sudo mv -f  $RECOVERY_STAGEDIR/02_tgt_etc_systemd_system/jujud-${RECOVERY_SRCMACHINE}-exec-start.sh $RECOVERY_STAGEDIR/02_tgt_etc_systemd_system/jujud-${RECOVERY_TGTMACHINE}-exec-start.sh
 sudo mv -f  $RECOVERY_STAGEDIR/02_tgt_etc_systemd_system/jujud-${RECOVERY_SRCMACHINE}.service       $RECOVERY_STAGEDIR/02_tgt_etc_systemd_system/jujud-${RECOVERY_TGTMACHINE}.service
 sudo sudo sed -i "s/${RECOVERY_SRCMACHINE}/${RECOVERY_TGTMACHINE}/g" $RECOVERY_STAGEDIR/02_tgt_etc_systemd_system/jujud-${RECOVERY_TGTMACHINE}*
-diff --recorsive --unified $RECOVERY_STAGEDIR/01_src_var_lib $RECOVERY_STAGEDIR/02_tgt_var_lib
+sudo diff --recursive --unified --no-dereference $RECOVERY_STAGEDIR/01_src_var_lib $RECOVERY_STAGEDIR/02_tgt_var_lib
 
 echo -e "\n    Archive target directories"
 sudo tar -C $RECOVERY_STAGEDIR/02_tgt_var_lib            -c${V}f $RECOVERY_STAGEDIR/02_tgt_var_lib.tar            ./
