@@ -19,37 +19,37 @@ juju ssh "$RECOVERY_SRCMACHINENUM" ls -l /tmp/src_*.tar
 
 echo -e "\n    Retrieve source directory archives from source machine"
 juju scp "$RECOVERY_SRCMACHINENUM":/tmp/src_var_lib.tar \
-          $RECOVERY_STAGEDIR/01_src_var_lib.tar
+          $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
 juju scp "$RECOVERY_SRCMACHINENUM":/tmp/src_etc_systemd_system.tar \
-          $RECOVERY_STAGEDIR/01_src_etc_systemd_system.tar
-ls -l $RECOVERY_STAGEDIR/01_src_*.tar
+          $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
+ls -l $RECOVERY_STAGEDIR/01_SRC_*.tar
 
-if [ -d $RECOVERY_STAGEDIR/01_src_var_lib ]
+if [ -d $RECOVERY_STAGEDIR/01_SRC_var_lib ]
 then
-  timestamp=$(stat --format %y $RECOVERY_STAGEDIR/01_src_var_lib | tr ' :' '_-')
-  echo -e "\n    Move old staged source directory $RECOVERY_STAGEDIR/01_src_var_lib out of the way to ${RECOVERY_STAGEDIR}/01_src_var_lib.${timestamp}"
-  sudo mv $RECOVERY_STAGEDIR/01_src_var_lib  ${RECOVERY_STAGEDIR}/01_src_var_lib.${timestamp}
-  ls -ld ${RECOVERY_STAGEDIR}/01_src_var_lib.${timestamp}
+  timestamp=$(stat --format %y $RECOVERY_STAGEDIR/01_SRC_var_lib | tr ' :' '_-')
+  echo -e "\n    Move old staged source directory $RECOVERY_STAGEDIR/01_SRC_var_lib out of the way to ${RECOVERY_STAGEDIR}/01_SRC_var_lib.${timestamp}"
+  sudo mv $RECOVERY_STAGEDIR/01_SRC_var_lib  ${RECOVERY_STAGEDIR}/01_SRC_var_lib.${timestamp}
+  ls -ld ${RECOVERY_STAGEDIR}/01_SRC_var_lib.${timestamp}
 fi
 
-if [ -d $RECOVERY_STAGEDIR/01_src_etc_systemd_system ]
+if [ -d $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system ]
 then
-  timestamp=$(stat --format %y $RECOVERY_STAGEDIR/01_src_etc_systemd_system | tr ' :' '_-')
-  echo -e "\n    Move old staged source directory $RECOVERY_STAGEDIR/01_src_etc_systemd_system out of the way to ${RECOVERY_STAGEDIR}/01_src_etc_systemd_system.${timestamp}"
-  sudo mv $RECOVERY_STAGEDIR/01_src_etc_systemd_system ${RECOVERY_STAGEDIR}/01_src_etc_systemd_system.${timestamp}
-  ls -ld ${RECOVERY_STAGEDIR}/01_src_etc_systemd_system.${timestamp}
+  timestamp=$(stat --format %y $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system | tr ' :' '_-')
+  echo -e "\n    Move old staged source directory $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system out of the way to ${RECOVERY_STAGEDIR}/01_SRC_etc_systemd_system.${timestamp}"
+  sudo mv $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system ${RECOVERY_STAGEDIR}/01_SRC_etc_systemd_system.${timestamp}
+  ls -ld ${RECOVERY_STAGEDIR}/01_SRC_etc_systemd_system.${timestamp}
 fi
 
 echo -e "\n    Make staged source directories"
-sudo mkdir $RECOVERY_STAGEDIR/01_src_var_lib
-sudo mkdir $RECOVERY_STAGEDIR/01_src_etc_systemd_system
-ls -ld $RECOVERY_STAGEDIR/01_src_var_lib
-ls -ld $RECOVERY_STAGEDIR/01_src_etc_systemd_system
+sudo mkdir $RECOVERY_STAGEDIR/01_SRC_var_lib
+sudo mkdir $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system
+ls -ld $RECOVERY_STAGEDIR/01_SRC_var_lib
+ls -ld $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system
 
 echo -e "\n    Extract source directories from archives"
-sudo tar -C      $RECOVERY_STAGEDIR/01_src_var_lib \
-         -x${V}f $RECOVERY_STAGEDIR/01_src_var_lib.tar
-sudo tar -C      $RECOVERY_STAGEDIR/01_src_etc_systemd_system \
-         -x${V}f $RECOVERY_STAGEDIR/01_src_etc_systemd_system.tar
-ls -l $RECOVERY_STAGEDIR/01_src_var_lib
-ls -l $RECOVERY_STAGEDIR/01_src_etc_systemd_system
+sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_var_lib \
+         -x${V}f $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
+sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system \
+         -x${V}f $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
+ls -l $RECOVERY_STAGEDIR/01_SRC_var_lib
+ls -l $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system

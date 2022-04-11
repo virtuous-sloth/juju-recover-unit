@@ -8,8 +8,8 @@ else
   source recover-machine-00-LOCALENV
 fi
 
-if [[ ! -d $STAGEDIR/03_tgt_var_lib_juju_agents_${SRCMACHINE_DASH}      || \
-      ! -d $STAGEDIR/03_tgt_etc_systemd_system_jujud-${SRCMACHINE_DASH} ]]
+if [[ ! -d $STAGEDIR/03_TGT_var_lib_juju_agents_${SRCMACHINE_DASH}      || \
+      ! -d $STAGEDIR/03_TGT_etc_systemd_system_jujud-${SRCMACHINE_DASH} ]]
 then
   echo "    Have you run recover-machine-03-edit-staged-tgt-target-directories?"
   echo "    Can't find target directories in $STAGEDIR"
