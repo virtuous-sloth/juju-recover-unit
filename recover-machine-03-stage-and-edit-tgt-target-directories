@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+
+if [[ ! -r "$RECOVERY_STAGEDIR/01_SRC_var_lib.tar" ||   \
+      ! -r "$RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar" ]]
+then
+  echo -e "\n   Have you run recover-machine-01-get-src-directories?"
+  echo -e "\n   Can't find source archives in $RECOVERY_STAGEDIR"
+  ls -l $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
+  ls -l $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
+  exit 1
+fi
+
+echo -e "\n   Make target directories"
+mkdir -p $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
+mkdir -p $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system
+ls -ld $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
+ls -ld $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system
+
+echo -e "\n   Extract source directory archives into target directories"
+sudo tar -C $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib            -x${V}f $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
+sudo tar -C $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system -x${V}f $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
+ls -l  $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
+ls -l  $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system
+
+echo -e "\n   Edit target files"
+sudo rm -rf $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/unit*
+sudo rm -rf $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/meter-status.yaml
+sudo rm -rf $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/locks/*
+sudo rm -rf $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/unit*
+sudo rm -rf $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/metricspool
+sudo rm -rf $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/nonce.txt
+sudo mv -f  $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RECOVERY_SRCMACHINE} $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RECOVERY_TGTMACHINE}
+sudo mv -f  $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RECOVERY_SRCMACHINE}  $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RECOVERY_TGTMACHINE}
+sudo sudo sed -i "s/${RECOVERY_SRCMACHINE}/${RECOVERY_TGTMACHINE}/g" $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RECOVERY_TGTMACHINE}/agent.conf
+sudo diff --recursive --unified --no-dereference $RECOVERY_STAGEDIR/01_SRC_var_lib $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
+sudo mv -f  $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RECOVERY_SRCMACHINE}-exec-start.sh $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RECOVERY_TGTMACHINE}-exec-start.sh
+sudo mv -f  $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RECOVERY_SRCMACHINE}.service       $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RECOVERY_TGTMACHINE}.service
+sudo sudo sed -i "s/${RECOVERY_SRCMACHINE}/${RECOVERY_TGTMACHINE}/g" $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RECOVERY_TGTMACHINE}*
+sudo diff --recursive --unified --no-dereference $RECOVERY_STAGEDIR/01_SRC_var_lib $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
+
+echo -e "\n    Archive target directories"
+sudo tar -C $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib            -c${V}f $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib.tar            ./
+sudo tar -C $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system -c${V}f $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system.tar ./
+ls -l  $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib.tar
+ls -l  $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system.tar
