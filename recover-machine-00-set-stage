@@ -29,35 +29,35 @@ RECOVERY_APPLICATION=$(cat $RECOVERY_STAGEDIR/00-status.json \
 echo $RECOVERY_APPLICATION
 
 echo -e "\n    Determine target machine with application installing agent"
-RECOVERY_TGTMACHINENUM=$(cat $RECOVERY_STAGEDIR/00-status.json \
+RECOVERY_TGT_MACHINENUM=$(cat $RECOVERY_STAGEDIR/00-status.json \
                | jq -r '.applications[]?.units[]?
                        | select(.subordinates != null)
                        | select(.subordinates[]."workload-status".message == "installing agent").machine
                        ' \
                )
-echo $RECOVERY_TGTMACHINENUM
+echo $RECOVERY_TGT_MACHINENUM
 
 echo -e "\n    Determine source machine with application active"
-RECOVERY_SRCMACHINENUM=$(cat $RECOVERY_STAGEDIR/00-status.json \
+RECOVERY_SRC_MACHINENUM=$(cat $RECOVERY_STAGEDIR/00-status.json \
                | jq -r '.applications[]?.units[]?
                        | select(.subordinates != null)
                        | select(.subordinates[]."workload-status".current == "active").machine
                        ' \
                | tail -1
                )
-echo $RECOVERY_SRCMACHINENUM
+echo $RECOVERY_SRC_MACHINENUM
 
-RECOVERY_TGTMACHINE=machine-$RECOVERY_TGTMACHINENUM
-RECOVERY_SRCMACHINE=machine-$RECOVERY_SRCMACHINENUM
+RECOVERY_TGT_MACHINE=machine-$RECOVERY_TGT_MACHINENUM
+RECOVERY_SRC_MACHINE=machine-$RECOVERY_SRC_MACHINENUM
 
 echo -e "\n    Populate local environment file"
 cat <<END > $RECOVERY_STAGEDIR/00-LOCALENV
 export RECOVERY_STAGEDIR=$RECOVERY_STAGEDIR
 export RECOVERY_APPLICATION=$RECOVERY_APPLICATION
-export RECOVERY_TGTMACHINENUM=$RECOVERY_TGTMACHINENUM
-export RECOVERY_SRCMACHINENUM=$RECOVERY_SRCMACHINENUM
-export RECOVERY_TGTMACHINE=$RECOVERY_TGTMACHINE
-export RECOVERY_SRCMACHINE=$RECOVERY_SRCMACHINE
+export RECOVERY_TGT_MACHINENUM=$RECOVERY_TGT_MACHINENUM
+export RECOVERY_SRC_MACHINENUM=$RECOVERY_SRC_MACHINENUM
+export RECOVERY_TGT_MACHINE=$RECOVERY_TGT_MACHINE
+export RECOVERY_SRC_MACHINE=$RECOVERY_SRC_MACHINE
 END
 cat $RECOVERY_STAGEDIR/00-LOCALENV
 
