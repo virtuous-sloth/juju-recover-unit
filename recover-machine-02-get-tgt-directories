@@ -6,27 +6,23 @@ then
   exit 1
 fi
 
-echo -e "\n    Archive source directories on source machine"
-juju ssh "$RECOVERY_TGT_MACHINENUM" sudo tar -C      /var/lib \
-                                            -c${V}f /tmp/src_var_lib.tar \
-                                            ./juju
-juju ssh "$RECOVERY_TGT_MACHINENUM" sudo tar -C      /etc/systemd/system \
-                                            -c${V}f /tmp/src_etc_systemd_system.tar \
-                                            ./jujud-${RECOVERY_TGT_MACHINE}-exec-start.sh \
-                                            ./jujud-${RECOVERY_TGT_MACHINE}.service
+echo -e "\n    Archive target directories on target machine"
+juju ssh "$RECOVERY_TGT_MACHINENUM" sudo tar -C /var/lib -c${V}f /tmp/src_var_lib.tar \
+                                                ./juju
+juju ssh "$RECOVERY_TGT_MACHINENUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/src_etc_systemd_system.tar \
+                                                ./jujud-${RECOVERY_TGT_MACHINE}-exec-start.sh \
+                                                ./jujud-${RECOVERY_TGT_MACHINE}.service
 juju ssh "$RECOVERY_TGT_MACHINENUM" ls -l /tmp/src_*.tar
 
-echo -e "\n    Retrieve source directory archives from source machine"
-juju scp "$RECOVERY_TGT_MACHINENUM":/tmp/src_var_lib.tar \
-          $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib.tar
-juju scp "$RECOVERY_TGT_MACHINENUM":/tmp/src_etc_systemd_system.tar \
-          $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
+echo -e "\n    Retrieve target directory archives from target machine"
+juju scp "$RECOVERY_TGT_MACHINENUM":/tmp/src_var_lib.tar            $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib.tar
+juju scp "$RECOVERY_TGT_MACHINENUM":/tmp/src_etc_systemd_system.tar $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
 ls -l $RECOVERY_STAGEDIR/02_TGT_BKP_*.tar
 
 if [ -d $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib ]
 then
   timestamp=$(stat --format %y $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib | tr ' :' '_-')
-  echo -e "\n    Move old staged source directory $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib out of the way to ${RECOVERY_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}"
+  echo -e "\n    Move old staged target backup directory $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib out of the way to ${RECOVERY_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}"
   sudo mv $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib  ${RECOVERY_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}
   ls -ld ${RECOVERY_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}
 fi
@@ -34,22 +30,20 @@ fi
 if [ -d $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system ]
 then
   timestamp=$(stat --format %y $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system | tr ' :' '_-')
-  echo -e "\n    Move old staged source directory $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system out of the way to ${RECOVERY_STAGEDIR}/02_TGT_BKP_etc_systemd_system.${timestamp}"
-  sudo mv $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system ${RECOVERY_STAGEDIR}/02_TGT_BKP_etc_systemd_system.${timestamp}
-  ls -ld ${RECOVERY_STAGEDIR}/02_TGT_BKP_etc_systemd_system.${timestamp}
+  echo -e "\n    Move old staged backup target directory $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system out of the way to ${RECOVERY_STAGEDIR}/02_TGT_BKP_etc_systemd_system.${timestamp}"
+  sudo mv $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
+  ls -ld  $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
 fi
 
 echo -e "\n    Make staged source directories"
 sudo mkdir $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib
 sudo mkdir $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system
-ls -ld $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib
-ls -ld $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system
+ls -ld     $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib
+ls -ld     $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system
 
 echo -e "\n    Extract source directories from archives"
-sudo tar -C      $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib \
-         -x${V}f $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib.tar
-sudo tar -C      $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system \
-         -x${V}f $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
+sudo tar -C      $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib            -x${V}f $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib.tar
+sudo tar -C      $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system -x${V}f $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
 echo "$RECOVERY_STAGEDIR/02_TGT_BKP_var_lib:"
 ls -l $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib
 echo "$RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system:"
