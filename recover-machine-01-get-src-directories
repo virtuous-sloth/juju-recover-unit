@@ -7,19 +7,19 @@ then
 fi
 
 echo -e "\n    Archive source directories on source machine"
-juju ssh "$RECOVERY_SRCMACHINENUM" sudo tar -C      /var/lib \
+juju ssh "$RECOVERY_SRC_MACHINENUM" sudo tar -C      /var/lib \
                                             -c${V}f /tmp/src_var_lib.tar \
                                             ./juju
-juju ssh "$RECOVERY_SRCMACHINENUM" sudo tar -C      /etc/systemd/system \
+juju ssh "$RECOVERY_SRC_MACHINENUM" sudo tar -C      /etc/systemd/system \
                                             -c${V}f /tmp/src_etc_systemd_system.tar \
-                                            ./jujud-${RECOVERY_SRCMACHINE}-exec-start.sh \
-                                            ./jujud-${RECOVERY_SRCMACHINE}.service
-juju ssh "$RECOVERY_SRCMACHINENUM" ls -l /tmp/src_*.tar
+                                            ./jujud-${RECOVERY_SRC_MACHINE}-exec-start.sh \
+                                            ./jujud-${RECOVERY_SRC_MACHINE}.service
+juju ssh "$RECOVERY_SRC_MACHINENUM" ls -l /tmp/src_*.tar
 
 echo -e "\n    Retrieve source directory archives from source machine"
-juju scp "$RECOVERY_SRCMACHINENUM":/tmp/src_var_lib.tar \
+juju scp "$RECOVERY_SRC_MACHINENUM":/tmp/src_var_lib.tar \
           $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
-juju scp "$RECOVERY_SRCMACHINENUM":/tmp/src_etc_systemd_system.tar \
+juju scp "$RECOVERY_SRC_MACHINENUM":/tmp/src_etc_systemd_system.tar \
           $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
 ls -l $RECOVERY_STAGEDIR/01_SRC_*.tar
 
