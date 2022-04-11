@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
-if [[ ! -r "$RECOVERY_STAGEDIR/01_src_var_lib_juju.tar" ||   \
-      ! -r "$RECOVERY_STAGEDIR/01_src_etc_systemd_system_jujud-${RECOVERY_SRCMACHINE}.tar" ]]
+if [[ ! -r "$RECOVERY_STAGEDIR/01_src_var_lib.tar" ||   \
+      ! -r "$RECOVERY_STAGEDIR/01_src_etc_systemd_system.tar" ]]
 then
   echo -e "\n   Have you run recover-machine-01-get-src-directories?"
   echo -e "\n   Can't find source archives in $RECOVERY_STAGEDIR"
