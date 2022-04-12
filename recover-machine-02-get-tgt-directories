@@ -2,7 +2,7 @@
 
 if [[ ! -d "$RECOVERY_STAGEDIR" ]]
 then
-  echo "    Did you run recover-machine-00-set-stage?"
+  echo -e "\n    Did you run recover-machine-00-set-stage?"
   exit 1
 elif [[ -r $RECOVERY_STAGEDIR/00-FUNCTIONS && \
         -r $RECOVERY_STAGEDIR/00-LOCALENV  ]]
@@ -47,7 +47,7 @@ fi
 recover_mkdir $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib
 recover_mkdir $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system
 
-echo -e "\n    Extract source directories from archives"
+echo -e "\n    Extract target directories from archives"
 sudo tar -C      $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib            -x${V}f $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib.tar
 sudo tar -C      $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system -x${V}f $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
 echo "$RECOVERY_STAGEDIR/02_TGT_BKP_var_lib:"

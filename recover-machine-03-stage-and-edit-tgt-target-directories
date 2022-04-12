@@ -19,7 +19,9 @@ recover_mkdir $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system
 echo -e "\n   Extract source directory archives into target directories"
 sudo tar -C $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib            -x${V}f $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
 sudo tar -C $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system -x${V}f $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
+echo $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib:
 ls -l  $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
+echo $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system:
 ls -l  $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system
 
 echo -e "\n   Edit target files"
