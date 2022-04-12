@@ -5,16 +5,27 @@ then
   export RECOVERY_STAGEDIR="./_stage"
 fi
 
-if [[ -d "$RECOVERY_STAGEDIR" ]]
-then
-  timestamp=$(stat --format %y $RECOVERY_STAGEDIR | tr ' :' '_-')
-  echo -e "\n    Move old stage directory $RECOVERY_STAGEDIR out of the way to ${RECOVERY_STAGEDIR}.${timestamp}"
-  mv $RECOVERY_STAGEDIR/ ${RECOVERY_STAGEDIR}.${timestamp}
-  ls -ld ${RECOVERY_STAGEDIR}.${timestamp}
-fi
-echo -e "\n    Make new stage directory"
-mkdir -p  $RECOVERY_STAGEDIR
-ls    -ld $RECOVERY_STAGEDIR
+# Define functions here:
+function recover_mkdir
+{
+  local dir=$1
+
+  if [ -d $dir ]
+  then
+    timestamp=$(stat --format %y $dir | tr ' :' '_-')
+    echo -e "\n    Move old staged target directory $dir out of the way to $dir.${timestamp}"
+    sudo mv $dir $dir.${timestamp}
+    ls -ld $dir.${timestamp}
+  fi
+  echo -e "\n    Make target directory"
+  mkdir -p $dir
+  ls -ld $dir
+}
+recover_mkdir $RECOVERY_STAGEDIR
+# Dump functions in file to be sourced by other scripts:
+echo -e "\n    Create function file"
+declare -f recover_mkdir > $RECOVERY_STAGEDIR/00-FUNCTIONS
+ls -l $RECOVERY_STAGEDIR/00-FUNCTIONS
 
 echo -e "\n    Get juju status"
 juju status --format json > $RECOVERY_STAGEDIR/00-status.json
@@ -60,6 +71,3 @@ export RECOVERY_TGT_MACHINE=$RECOVERY_TGT_MACHINE
 export RECOVERY_SRC_MACHINE=$RECOVERY_SRC_MACHINE
 END
 cat $RECOVERY_STAGEDIR/00-LOCALENV
-
-echo -e "\n    Run following before step 01:"
-echo -e "source $RECOVERY_STAGEDIR/00-LOCALENV"

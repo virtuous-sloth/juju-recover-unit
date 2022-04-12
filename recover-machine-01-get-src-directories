@@ -4,6 +4,15 @@ if [[ ! -d "$RECOVERY_STAGEDIR" ]]
 then
   echo -e "\n    Did you run recover-machine-00-set-stage?"
   exit 1
+elif [[ -r $RECOVERY_STAGEDIR/00-FUNCTIONS && \
+        -r $RECOVERY_STAGEDIR/00-LOCALENV  ]]
+then
+  source $RECOVERY_STAGEDIR/00-FUNCTIONS 
+  source $RECOVERY_STAGEDIR/00-LOCALENV 
+else
+  echo -e "\n    Can't find all my files:"
+  ls -l $RECOVERY_STAGEDIR/00-FUNCTIONS
+  ls -l $RECOVERY_STAGEDIR/00-LOCALENV
 fi
 
 echo -e "\n    Archive source directories on source machine"
@@ -19,27 +28,8 @@ juju scp "$RECOVERY_SRC_MACHINENUM":/tmp/src_var_lib.tar            $RECOVERY_ST
 juju scp "$RECOVERY_SRC_MACHINENUM":/tmp/src_etc_systemd_system.tar $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
 ls -l $RECOVERY_STAGEDIR/01_SRC_*.tar
 
-if [ -d $RECOVERY_STAGEDIR/01_SRC_var_lib ]
-then
-  timestamp=$(stat --format %y $RECOVERY_STAGEDIR/01_SRC_var_lib | tr ' :' '_-')
-  echo -e "\n    Move old staged source directory $RECOVERY_STAGEDIR/01_SRC_var_lib out of the way to ${RECOVERY_STAGEDIR}/01_SRC_var_lib.${timestamp}"
-  sudo mv $RECOVERY_STAGEDIR/01_SRC_var_lib  ${RECOVERY_STAGEDIR}/01_SRC_var_lib.${timestamp}
-  ls -ld ${RECOVERY_STAGEDIR}/01_SRC_var_lib.${timestamp}
-fi
-
-if [ -d $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system ]
-then
-  timestamp=$(stat --format %y $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system | tr ' :' '_-')
-  echo -e "\n    Move old staged source directory $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system out of the way to ${RECOVERY_STAGEDIR}/01_SRC_etc_systemd_system.${timestamp}"
-  sudo mv $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system ${RECOVERY_STAGEDIR}/01_SRC_etc_systemd_system.${timestamp}
-  ls -ld ${RECOVERY_STAGEDIR}/01_SRC_etc_systemd_system.${timestamp}
-fi
-
-echo -e "\n    Make staged source directories"
-sudo mkdir $RECOVERY_STAGEDIR/01_SRC_var_lib
-sudo mkdir $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system
-ls -ld $RECOVERY_STAGEDIR/01_SRC_var_lib
-ls -ld $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system
+recover_mkdir $RECOVERY_STAGEDIR/01_SRC_var_lib
+recover_mkdir $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system
 
 echo -e "\n    Extract source directories from archives"
 sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_var_lib            -x${V}f $RECOVERY_STAGEDIR/01_SRC_var_lib.tar

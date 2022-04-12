@@ -8,13 +8,13 @@ then
   ls -l $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
   ls -l $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
   exit 1
+else
+  source $RECOVERY_STAGEDIR/00-FUNCTIONS
+  source $RECOVERY_STAGEDIR/00-LOCALENV
 fi
 
-echo -e "\n   Make target directories"
-mkdir -p $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
-mkdir -p $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system
-ls -ld $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
-ls -ld $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system
+recover_mkdir $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib
+recover_mkdir $RECOVERY_STAGEDIR/03_TGT_NEW_etc_systemd_system
 
 echo -e "\n   Extract source directory archives into target directories"
 sudo tar -C $RECOVERY_STAGEDIR/03_TGT_NEW_var_lib            -x${V}f $RECOVERY_STAGEDIR/01_SRC_var_lib.tar

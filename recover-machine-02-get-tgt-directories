@@ -4,6 +4,15 @@ if [[ ! -d "$RECOVERY_STAGEDIR" ]]
 then
   echo "    Did you run recover-machine-00-set-stage?"
   exit 1
+elif [[ -r $RECOVERY_STAGEDIR/00-FUNCTIONS && \
+        -r $RECOVERY_STAGEDIR/00-LOCALENV  ]]
+then
+  source $RECOVERY_STAGEDIR/00-FUNCTIONS
+  source $RECOVERY_STAGEDIR/00-LOCALENV
+else
+  echo -e "\n    Can't find all my files:"
+  ls -l $RECOVERY_STAGEDIR/00-FUNCTIONS
+  ls -l $RECOVERY_STAGEDIR/00-LOCALENV
 fi
 
 echo -e "\n    Archive target directories on target machine"
@@ -35,11 +44,8 @@ then
   ls -ld  $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
 fi
 
-echo -e "\n    Make staged source directories"
-sudo mkdir $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib
-sudo mkdir $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system
-ls -ld     $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib
-ls -ld     $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system
+recover_mkdir $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib
+recover_mkdir $RECOVERY_STAGEDIR/02_TGT_BKP_etc_systemd_system
 
 echo -e "\n    Extract source directories from archives"
 sudo tar -C      $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib            -x${V}f $RECOVERY_STAGEDIR/02_TGT_BKP_var_lib.tar
