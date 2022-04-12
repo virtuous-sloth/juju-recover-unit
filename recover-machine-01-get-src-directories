@@ -2,7 +2,7 @@
 
 if [[ ! -d "$RECOVERY_STAGEDIR" ]]
 then
-  echo "    Did you run recover-machine-00-set-stage?"
+  echo -e "\n    Did you run recover-machine-00-set-stage?"
   exit 1
 fi
 
