@@ -7,20 +7,16 @@ then
 fi
 
 echo -e "\n    Archive source directories on source machine"
-juju ssh "$RECOVERY_SRC_MACHINENUM" sudo tar -C      /var/lib \
-                                            -c${V}f /tmp/src_var_lib.tar \
+juju ssh "$RECOVERY_SRC_MACHINENUM" sudo tar -C /var/lib -c${V}f /tmp/src_var_lib.tar \
                                             ./juju
-juju ssh "$RECOVERY_SRC_MACHINENUM" sudo tar -C      /etc/systemd/system \
-                                            -c${V}f /tmp/src_etc_systemd_system.tar \
+juju ssh "$RECOVERY_SRC_MACHINENUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/src_etc_systemd_system.tar \
                                             ./jujud-${RECOVERY_SRC_MACHINE}-exec-start.sh \
                                             ./jujud-${RECOVERY_SRC_MACHINE}.service
 juju ssh "$RECOVERY_SRC_MACHINENUM" ls -l /tmp/src_*.tar
 
 echo -e "\n    Retrieve source directory archives from source machine"
-juju scp "$RECOVERY_SRC_MACHINENUM":/tmp/src_var_lib.tar \
-          $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
-juju scp "$RECOVERY_SRC_MACHINENUM":/tmp/src_etc_systemd_system.tar \
-          $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
+juju scp "$RECOVERY_SRC_MACHINENUM":/tmp/src_var_lib.tar            $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
+juju scp "$RECOVERY_SRC_MACHINENUM":/tmp/src_etc_systemd_system.tar $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
 ls -l $RECOVERY_STAGEDIR/01_SRC_*.tar
 
 if [ -d $RECOVERY_STAGEDIR/01_SRC_var_lib ]
@@ -46,10 +42,8 @@ ls -ld $RECOVERY_STAGEDIR/01_SRC_var_lib
 ls -ld $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system
 
 echo -e "\n    Extract source directories from archives"
-sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_var_lib \
-         -x${V}f $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
-sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system \
-         -x${V}f $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
+sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_var_lib            -x${V}f $RECOVERY_STAGEDIR/01_SRC_var_lib.tar
+sudo tar -C      $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system -x${V}f $RECOVERY_STAGEDIR/01_SRC_etc_systemd_system.tar
 echo "$RECOVERY_STAGEDIR/01_SRC_var_lib:"
 ls -l $RECOVERY_STAGEDIR/01_SRC_var_lib
 echo "$RECOVERY_STAGEDIR/01_SRC_etc_systemd_system:"
