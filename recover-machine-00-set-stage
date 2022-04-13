@@ -1,8 +1,10 @@
 #!/usr/bin/bash
 
-if [[ -z "$RECOVERY_STAGEDIR" ]]
+[[ -z "$DEBUG" ]] || set -x
+
+if [[ -z "$RM_STAGEDIR" ]]
 then
-  export RECOVERY_STAGEDIR="./_stage"
+  export RM_STAGEDIR="./_stage"
 fi
 
 # Define functions here:
@@ -21,53 +23,108 @@ function recover_mkdir
   mkdir -p $dir
   ls -ld $dir
 }
-recover_mkdir $RECOVERY_STAGEDIR
+recover_mkdir $RM_STAGEDIR
 # Dump functions in file to be sourced by other scripts:
 echo -e "\n    Create function file"
-declare -f recover_mkdir > $RECOVERY_STAGEDIR/00-FUNCTIONS
-ls -l $RECOVERY_STAGEDIR/00-FUNCTIONS
+declare -f recover_mkdir > $RM_STAGEDIR/00-FUNCTIONS
+ls -l $RM_STAGEDIR/00-FUNCTIONS
 
-echo -e "\n    Get juju status"
-juju status --format json > $RECOVERY_STAGEDIR/00-status.json
-ls -l $RECOVERY_STAGEDIR/00-status.json
+echo -e "\n    Get juju status and store it in $RM_STAGEDIR/00-status.json"
+juju status --format json > $RM_STAGEDIR/00-status.json
+ls -l $RM_STAGEDIR/00-status.json
 
-echo -e "\n    Determine application that is stuck installing"
-RECOVERY_APPLICATION=$(cat $RECOVERY_STAGEDIR/00-status.json \
+echo -e "\n    Get application that is stuck installing from $RM_STAGEDIR/00-status.json"
+RM_APPLICATION=$(cat $RM_STAGEDIR/00-status.json \
              | jq -r '.applications[]
                      | select(."application-status".message == "installing agent")."charm-name"
                      ' \
              )
-echo $RECOVERY_APPLICATION
+echo -e "    Got $RM_APPLICATION"
 
-echo -e "\n    Determine target machine with application installing agent"
-RECOVERY_TGT_MACHINENUM=$(cat $RECOVERY_STAGEDIR/00-status.json \
+echo -e "\n    Get target machine with application installing agent from $RM_STAGEDIR/00-status.json"
+RM_TGT_MACHINENUM=$(cat $RM_STAGEDIR/00-status.json \
                | jq -r '.applications[]?.units[]?
                        | select(.subordinates != null)
                        | select(.subordinates[]."workload-status".message == "installing agent").machine
                        ' \
                )
-echo $RECOVERY_TGT_MACHINENUM
+echo -e "    Got $RM_TGT_MACHINENUM"
 
-echo -e "\n    Determine source machine with application active"
-RECOVERY_SRC_MACHINENUM=$(cat $RECOVERY_STAGEDIR/00-status.json \
+echo -e "\n    Get source machine with application active from $RM_STAGEDIR/00-status.json"
+RM_SRC_MACHINENUM=$(cat $RM_STAGEDIR/00-status.json \
                | jq -r '.applications[]?.units[]?
                        | select(.subordinates != null)
                        | select(.subordinates[]."workload-status".current == "active").machine
                        ' \
                | tail -1
                )
-echo $RECOVERY_SRC_MACHINENUM
+echo "    Got $RM_SRC_MACHINENUM"
 
-RECOVERY_TGT_MACHINE=machine-$RECOVERY_TGT_MACHINENUM
-RECOVERY_SRC_MACHINE=machine-$RECOVERY_SRC_MACHINENUM
+RM_TGT_MACHINE=machine-$RM_TGT_MACHINENUM
+RM_SRC_MACHINE=machine-$RM_SRC_MACHINENUM
+
+echo -e "\n    Get first started controller num"
+RM_CTRLRNUM=$(juju machines -m controller | awk '/started/{print $1}' | head -n1) # grab first started controller NUM
+echo "    Got $RM_CTRLRNUM"
+
+echo -e "\n    Get first controller mongo password"
+RM_MONGO_PW=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
+echo "    Got $RM_MONGO_PW"
+
+echo -e "\n    Get first controller mongo client executable using executable name mongo"
+RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM which mongo | tr -d '\r')
+if [[ -z "$RM_MONGO_EXEC" ]]
+then
+  echo "    Mongo client executable not found with name 'mongo'"
+  echo -e "\n    Get first controller mongo client executable using executable name juju-db.mongo"
+  RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM which juju-db.mongo | tr -d '\r')
+  if [[ -z "$RM_MONGO_EXEC" ]]
+  then
+    echo "Failed to find mongo client executable."
+    exit 2
+  fi
+fi
+echo "    Got $RM_MONGO_EXEC"
+
+cat <<END > $RM_STAGEDIR/00-MONGO_CODE
+use juju
+rs.isMaster()['primary']
+END
+
+cat <<END > $RM_STAGEDIR/00-MONGO_RUN-CODE
+set -x
+$RM_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RM_CTRLRNUM -p $RM_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
+END
+
+juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLRNUM":/tmp/
+juju scp -m controller $RM_STAGEDIR/00-MONGO_RUN-CODE "$RM_CTRLRNUM":/tmp/
+
+echo -e "\n    Get primary controller number from first controller mongo db"
+RECOVER_PRIMARY_CONTROLLER=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1)
+echo "Got $RECOVER_PRIMARY_CONTROLLER"
+#juju ssh -m controller $RM_CTRLR_IP "sudo %s --port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-%s -p %s juju < /home/ubuntu/%s 2>/dev/null" | tail -n 2 | head -n 1
+
+#MONGO_TEMPLATE = "juju ssh -m controller ubuntu@%s \"sudo %s --port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-%s -p %s juju < /home/ubuntu/%s 2>/dev/null\" | tail -n 2 | head -n 1"
+
+
+
+
+#juju ssh -m controller ubuntu@%s \"sudo %s --port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-%s -p %s juju < /home/ubuntu/%s 2>/dev/null\" | tail -n 2 | head -n 1
+
+#use juju
+#db.machines.find({"model-uuid": "%s", "machineid": "%s"}, {"nonce": 1})
+
 
 echo -e "\n    Populate local environment file"
-cat <<END > $RECOVERY_STAGEDIR/00-LOCALENV
-export RECOVERY_STAGEDIR=$RECOVERY_STAGEDIR
-export RECOVERY_APPLICATION=$RECOVERY_APPLICATION
-export RECOVERY_TGT_MACHINENUM=$RECOVERY_TGT_MACHINENUM
-export RECOVERY_SRC_MACHINENUM=$RECOVERY_SRC_MACHINENUM
-export RECOVERY_TGT_MACHINE=$RECOVERY_TGT_MACHINE
-export RECOVERY_SRC_MACHINE=$RECOVERY_SRC_MACHINE
+cat <<END > $RM_STAGEDIR/00-LOCALENV
+export RM_STAGEDIR=$RM_STAGEDIR
+export RM_APPLICATION=$RM_APPLICATION
+export RM_TGT_MACHINENUM=$RM_TGT_MACHINENUM
+export RM_SRC_MACHINENUM=$RM_SRC_MACHINENUM
+export RM_TGT_MACHINE=$RM_TGT_MACHINE
+export RM_SRC_MACHINE=$RM_SRC_MACHINE
+export RM_CTRLRNUM=$RM_CTRLRNUM
+export RM_MONGO_PW=$RM_MONGO_PW
+export RM_MONGO_EXEC=$RM_MONGO_EXEC
 END
-cat $RECOVERY_STAGEDIR/00-LOCALENV
+cat $RM_STAGEDIR/00-LOCALENV
