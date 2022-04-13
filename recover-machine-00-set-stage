@@ -96,12 +96,13 @@ set -x
 $RM_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RM_CTRLRNUM -p $RM_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
 END
 
+echo -e "\n    Get primary controller IP from first controller mongo db"
 juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLRNUM":/tmp/
 juju scp -m controller $RM_STAGEDIR/00-MONGO_RUN-CODE "$RM_CTRLRNUM":/tmp/
+RECOVER_PRIMARY_CONTROLLER=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1 | awk -F: '{print $1}')
+echo "    Got $RECOVER_CTRL_IP"
 
-echo -e "\n    Get primary controller number from first controller mongo db"
-RECOVER_PRIMARY_CONTROLLER=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1)
-echo "Got $RECOVER_PRIMARY_CONTROLLER"
+
 #juju ssh -m controller $RM_CTRLR_IP "sudo %s --port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-%s -p %s juju < /home/ubuntu/%s 2>/dev/null" | tail -n 2 | head -n 1
 
 #MONGO_TEMPLATE = "juju ssh -m controller ubuntu@%s \"sudo %s --port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-%s -p %s juju < /home/ubuntu/%s 2>/dev/null\" | tail -n 2 | head -n 1"
