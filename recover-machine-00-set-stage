@@ -139,22 +139,45 @@ echo "==== Get primary controller num"
 RM_CTRLR_NUM=$(juju machines -m controller | awk -v ip=$RM_CTRLR_IP '$0 ~ ip {print $1}' | head -n1) # grab primary controller NUM using IP
 echo "     Got $RM_CTRLR_NUM"
 
-#juju ssh -m controller ubuntu@%s \"sudo %s --port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-%s -p %s juju < /home/ubuntu/%s 2>/dev/null\" | tail -n 2 | head -n 1
+echo "==== Get primary controller mongo password"
+RM_MONGO_PW=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
+echo "     Got $RM_MONGO_PW"
 
-#use juju
-#db.machines.find({"model-uuid": "%s", "machineid": "%s"}, {"nonce": 1})
+echo "==== Get primar controller mongo client executable using executable name mongo"
+RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which mongo | tr -d '\r')
+if [[ -z "$RM_MONGO_EXEC" ]]
+then
+  echo "     Mongo client executable not found with name 'mongo'"
+  echo "==== Get first controller mongo client executable using executable name juju-db.mongo"
+  RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which juju-db.mongo | tr -d '\r')
+  if [[ -z "$RM_MONGO_EXEC" ]]
+  then
+    echo "Failed to find mongo client executable."
+    exit 2
+  fi
+fi
+echo "     Got $RM_MONGO_EXEC"
 
-
-echo -e "\n    Populate local environment file"
-cat <<END > $RM_STAGEDIR/00-LOCALENV
-export RM_STAGEDIR=$RM_STAGEDIR
-export RM_APPLICATION=$RM_APPLICATION
-export RM_TGT_MACHINENUM=$RM_TGT_MACHINENUM
-export RM_SRC_MACHINENUM=$RM_SRC_MACHINENUM
-export RM_TGT_MACHINE=$RM_TGT_MACHINE
-export RM_SRC_MACHINE=$RM_SRC_MACHINE
-export RM_CTRLRNUM=$RM_CTRLRNUM
-export RM_MONGO_PW=$RM_MONGO_PW
-export RM_MONGO_EXEC=$RM_MONGO_EXEC
+echo "==== Get model uuid from primary controller mongo db"
+cat <<END > $RM_STAGEDIR/00-MONGO_CODE
+use juju
+db.models.find({"name": "$RM_MODEL_NAME"}, {"modeluuid": 1})
 END
-cat $RM_STAGEDIR/00-LOCALENV
+juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
+RM_MODEL_UUID=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1 | awk -F: '{print $1}')
+echo "     Got $RM_MODEL_UUID"
+
+echo "==== Get target machine nonce from primary controller mongo db"
+cat <<END > $RM_STAGEDIR/00-MONGO_CODE
+use juju
+db.machines.find({"model-uuid": "$RM_MODEL_UUID", "machineid": "$RM_MACHINE"}, {"nonce": 1})
+END
+juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
+RM_TGT_MACHINE_NONCE=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1 | jq .)
+echo "     Got $RM_TGT_MACHINE_NONCE"
+
+echo "==== Populate local environment file"
+for keyval in $(declare | grep ^RM_ | sort)
+do
+  echo export $keyval
+done | tee $RM_STAGEDIR/00-LOCALENV
