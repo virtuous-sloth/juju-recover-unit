@@ -1,6 +1,31 @@
 #!/usr/bin/bash
 
-[[ -z "$DEBUG" ]] || set -x
+[[ -z "$DEBUG" ]] || set -x # Enable debugging
+set -e # exit on error to be safe
+scriptname=$(basename $0)
+
+if [ "$#" -ne 1 ]; then
+  cat <<-USAGE 1>&2
+	Usage: $scriptname model
+	       where model is the model name to check
+	
+	       You can control the staging directory location:
+	         export RM_STAGEDIR=_stage
+	
+	       You can enable debugging:
+	         export DEBUG=1
+	         $scriptname modelname
+	       or:
+	         DEBUG=1 $scriptname modelname
+	USAGE
+  exit 0
+else
+  echo "==== Get model name"
+  RM_MODEL_NAME=$1
+  echo "     Got $RM_MODEL_NAME"
+fi
+echo "==== Switch Juju to $RM_MDOEL_NAME"
+juju switch $RM_MODEL_NAME
 
 if [[ -z "$RM_STAGEDIR" ]]
 then
