@@ -125,7 +125,6 @@ rs.isMaster()['primary']
 END
 
 cat <<END > $RM_STAGEDIR/00-MONGO_RUN-CODE
-set -x
 $RM_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RM_CTRLR_NUM -p $RM_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
 END
 
