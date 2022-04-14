@@ -126,7 +126,7 @@ END
 
 cat <<END > $RM_STAGEDIR/00-MONGO_RUN-CODE
 set -x
-$RM_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RM_CTRLRNUM -p $RM_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
+$RM_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RM_CTRLR_NUM -p $RM_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
 END
 
 echo -e "\n    Get primary controller IP from first controller mongo db"
