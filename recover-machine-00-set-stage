@@ -169,16 +169,17 @@ use juju
 db.models.find({"name": "$RM_MODEL_NAME"}, {"modeluuid": 1})
 END
 juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
-RM_MODEL_UUID=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE)
+RM_MODEL_UUID=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r ._id)
 echo "     Got $RM_MODEL_UUID"
 
 echo "==== Get target machine nonce from primary controller mongo db"
 cat <<END > $RM_STAGEDIR/00-MONGO_CODE
 use juju
-db.machines.find({"model-uuid": "$RM_MODEL_UUID", "machineid": "$RM_MACHINE"}, {"nonce": 1})
+db.machines.find({"model-uuid": "$RM_MODEL_UUID", "machineid": "$RM_TGT_MACHINE_NUM"}, {"nonce": 1})
 END
 juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
-RM_TGT_MACHINE_NONCE=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | jq .)
+RM_TGT_MACHINE_NONCE=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .nonce)
+juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r'
 echo "     Got $RM_TGT_MACHINE_NONCE"
 
 echo "==== Populate local environment file"
