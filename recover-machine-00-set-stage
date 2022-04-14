@@ -29,7 +29,7 @@ juju switch $RM_MODEL_NAME
 
 if [[ -z "$RM_STAGEDIR" ]]
 then
-  export RM_STAGEDIR="./_stage"
+  export RM_STAGEDIR="_stage"
 fi
 
 # Define functions here:
