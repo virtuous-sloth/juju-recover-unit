@@ -4,6 +4,14 @@
 set -e # exit on error to be safe
 scriptname=$(basename $0)
 
+if echo '{}' | jq . > /dev/null 2>&1
+then
+  :
+else
+  echo "Please install prerequisite tool jq"
+  exit 1
+fi
+
 if [ "$#" -ne 1 ]; then
   cat <<-USAGE 1>&2
 	Usage: $scriptname model
