@@ -157,6 +157,12 @@ then
 fi
 echo "     Got $RM_MONGO_EXEC"
 
+echo "==== Upload $RM_STAGEDIR/00-MONGO_RUN-CODE to primary controller to facilitate mongo db queries."
+cat <<END > $RM_STAGEDIR/00-MONGO_RUN-CODE
+$RM_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RM_CTRLR_NUM -p $RM_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
+END
+juju scp -m controller $RM_STAGEDIR/00-MONGO_RUN-CODE "$RM_CTRLR_NUM":/tmp/
+
 echo "==== Get model uuid from primary controller mongo db"
 cat <<END > $RM_STAGEDIR/00-MONGO_CODE
 use juju
