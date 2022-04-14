@@ -40,76 +40,76 @@ function recover_mkdir
   if [ -d $dir ]
   then
     timestamp=$(stat --format %y $dir | tr ' :' '_-')
-    echo -e "\n    Move old staged target directory $dir out of the way to $dir.${timestamp}"
+    echo "==== Move old staged target directory $dir out of the way to $dir.${timestamp}"
     sudo mv $dir $dir.${timestamp}
     ls -ld $dir.${timestamp}
   fi
-  echo -e "\n    Make target directory"
+  echo "==== Make target directory"
   mkdir -p $dir
   ls -ld $dir
 }
 recover_mkdir $RM_STAGEDIR
 # Dump functions in file to be sourced by other scripts:
-echo -e "\n    Create function file"
+echo "==== Create function file"
 declare -f recover_mkdir > $RM_STAGEDIR/00-FUNCTIONS
 ls -l $RM_STAGEDIR/00-FUNCTIONS
 
-echo -e "\n    Get juju status and store it in $RM_STAGEDIR/00-status.json"
+echo "==== Get juju status and store it in $RM_STAGEDIR/00-status.json"
 juju status --format json > $RM_STAGEDIR/00-status.json
 ls -l $RM_STAGEDIR/00-status.json
 
-echo -e "\n    Get application that is stuck installing from $RM_STAGEDIR/00-status.json"
+echo "==== Get application that is stuck installing from $RM_STAGEDIR/00-status.json"
 RM_APPLICATION=$(cat $RM_STAGEDIR/00-status.json \
              | jq -r '.applications[]
                      | select(."application-status".message == "installing agent")."charm-name"
                      ' \
              )
-echo -e "    Got $RM_APPLICATION"
+echo "     Got $RM_APPLICATION"
 
-echo -e "\n    Get target machine with application installing agent from $RM_STAGEDIR/00-status.json"
-RM_TGT_MACHINENUM=$(cat $RM_STAGEDIR/00-status.json \
+echo "==== Get target machine with application installing agent from $RM_STAGEDIR/00-status.json"
+RM_TGT_MACHINE_NUM=$(cat $RM_STAGEDIR/00-status.json \
                | jq -r '.applications[]?.units[]?
                        | select(.subordinates != null)
                        | select(.subordinates[]."workload-status".message == "installing agent").machine
                        ' \
                )
-echo -e "    Got $RM_TGT_MACHINENUM"
+echo "     Got $RM_TGT_MACHINE_NUM"
 
-echo -e "\n    Get source machine with application active from $RM_STAGEDIR/00-status.json"
-RM_SRC_MACHINENUM=$(cat $RM_STAGEDIR/00-status.json \
+echo "==== Get source machine with application active from $RM_STAGEDIR/00-status.json"
+RM_SRC_MACHINE_NUM=$(cat $RM_STAGEDIR/00-status.json \
                | jq -r '.applications[]?.units[]?
                        | select(.subordinates != null)
                        | select(.subordinates[]."workload-status".current == "active").machine
                        ' \
                | tail -1
                )
-echo "    Got $RM_SRC_MACHINENUM"
+echo "     Got $RM_SRC_MACHINE_NUM"
 
-RM_TGT_MACHINE=machine-$RM_TGT_MACHINENUM
-RM_SRC_MACHINE=machine-$RM_SRC_MACHINENUM
+RM_TGT_MACHINE=machine-$RM_TGT_MACHINE_NUM
+RM_SRC_MACHINE=machine-$RM_SRC_MACHINE_NUM
 
-echo -e "\n    Get first started controller num"
-RM_CTRLRNUM=$(juju machines -m controller | awk '/started/{print $1}' | head -n1) # grab first started controller NUM
-echo "    Got $RM_CTRLRNUM"
+echo "==== Get first started controller num"
+RM_CTRLR_NUM=$(juju machines -m controller | awk '/started/{print $1}' | head -n1) # grab first started controller _NUM
+echo "     Got $RM_CTRLR_NUM"
 
-echo -e "\n    Get first controller mongo password"
-RM_MONGO_PW=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
-echo "    Got $RM_MONGO_PW"
+echo "==== Get first controller mongo password"
+RM_MONGO_PW=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
+echo "     Got $RM_MONGO_PW"
 
-echo -e "\n    Get first controller mongo client executable using executable name mongo"
-RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM which mongo | tr -d '\r')
+echo "==== Get first controller mongo client executable using executable name mongo"
+RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which mongo | tr -d '\r')
 if [[ -z "$RM_MONGO_EXEC" ]]
 then
-  echo "    Mongo client executable not found with name 'mongo'"
-  echo -e "\n    Get first controller mongo client executable using executable name juju-db.mongo"
-  RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLRNUM which juju-db.mongo | tr -d '\r')
+  echo "     Mongo client executable not found with name 'mongo'"
+  echo "==== Get first controller mongo client executable using executable name juju-db.mongo"
+  RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which juju-db.mongo | tr -d '\r')
   if [[ -z "$RM_MONGO_EXEC" ]]
   then
     echo "Failed to find mongo client executable."
     exit 2
   fi
 fi
-echo "    Got $RM_MONGO_EXEC"
+echo "     Got $RM_MONGO_EXEC"
 
 cat <<END > $RM_STAGEDIR/00-MONGO_CODE
 use juju
