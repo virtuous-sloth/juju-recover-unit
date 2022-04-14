@@ -142,7 +142,7 @@ echo "==== Get primary controller mongo password"
 RM_MONGO_PW=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
 echo "     Got $RM_MONGO_PW"
 
-echo "==== Get primar controller mongo client executable using executable name mongo"
+echo "==== Get primary controller mongo client executable using executable name mongo"
 RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which mongo | tr -d '\r')
 if [[ -z "$RM_MONGO_EXEC" ]]
 then
