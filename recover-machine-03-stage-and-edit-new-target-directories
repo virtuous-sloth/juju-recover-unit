@@ -7,7 +7,7 @@ if [[ -z "$RM_STAGEDIR" && -d _stage ]]
 then
   export RM_STAGEDIR="_stage"
 else
-  echo "==== Did you run recover-machine-00-set-stage?"
+  echo "     Did you run recover-machine-00-set-stage?"
   exit 1
 fi
 
@@ -18,7 +18,7 @@ then
   source $RM_STAGEDIR/00-LOCALENV
   env | grep RM_ | sort
 else
-  echo "==== Can't find all my files:"
+  echo "     Can't find all my files:"
   ls -l $RM_STAGEDIR/00-FUNCTIONS
   ls -l $RM_STAGEDIR/00-LOCALENV
   exit 1
@@ -27,8 +27,8 @@ fi
 if [[ ! -r "$RM_STAGEDIR/01_SRC_var_lib.tar" ||   \
       ! -r "$RM_STAGEDIR/01_SRC_etc_systemd_system.tar" ]]
 then
-  echo "==== Have you run recover-machine-01-get-src-directories?"
-  echo "==== Can't find source archives in $RM_STAGEDIR"
+  echo "     Have you run recover-machine-01-get-src-directories?"
+  echo "     Can't find source archives in $RM_STAGEDIR"
   ls -l $RM_STAGEDIR/01_SRC_var_lib.tar
   ls -l $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
   exit 1
@@ -40,7 +40,7 @@ fi
 recover_mkdir $RM_STAGEDIR/03_TGT_NEW_var_lib
 recover_mkdir $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
 
-echo "==== Extract source directory archives into new target directories"
+echo "     Extract source directory archives into new target directories"
 sudo tar -C $RM_STAGEDIR/03_TGT_NEW_var_lib            -x${V}f $RM_STAGEDIR/01_SRC_var_lib.tar
 sudo tar -C $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system -x${V}f $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
 echo $RM_STAGEDIR/03_TGT_NEW_var_lib:
@@ -48,7 +48,7 @@ ls -l  $RM_STAGEDIR/03_TGT_NEW_var_lib
 echo $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system:
 ls -l  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
 
-echo "==== Edit new target files"
+echo "     Edit new target files"
 sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/unit*
 sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/meter-status.yaml
 sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/locks/*
@@ -62,7 +62,7 @@ sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_SRC_MACHINE}-e
 sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_SRC_MACHINE}.service       $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_TGT_MACHINE}.service
 sudo sudo sed -i "s/${RM_SRC_MACHINE}/${RM_TGT_MACHINE}/g" $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_TGT_MACHINE}*
 
-echo "==== Diff of directories"
+echo "     Diff of directories"
 set +e # Temporarily don't exit on error because we expect diff to find differences
 sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_SRC_MACHINE}/agent.conf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_TGT_MACHINE}/agent.conf
 sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-*.sh      $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-*.sh

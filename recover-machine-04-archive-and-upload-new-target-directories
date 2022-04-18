@@ -7,7 +7,7 @@ if [[ -z "$RM_STAGEDIR" && -d _stage ]]
 then
   export RM_STAGEDIR="_stage"
 else
-  echo "==== Did you run recover-machine-00-set-stage?"
+  echo "     Did you run recover-machine-00-set-stage?"
   exit 1
 fi
 
@@ -18,7 +18,7 @@ then
   source $RM_STAGEDIR/00-LOCALENV
   env| grep RM_ | sort
 else
-  echo "==== Can't find all my files:"
+  echo "     Can't find all my files:"
   ls -l $RM_STAGEDIR/00-FUNCTIONS
   ls -l $RM_STAGEDIR/00-LOCALENV
   exit 1
@@ -27,20 +27,20 @@ fi
 if [[ ! -d $RM_STAGEDIR/03_TGT_NEW_var_lib       || \
       ! -d $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system ]]
 then
-  echo "    Have you run recover-machine-03-edit-staged-tgt-target-directories?"
-  echo "    Can't find target directories in $RM_STAGEDIR"
+  echo "===> Have you run recover-machine-03-edit-staged-tgt-target-directories?"
+  echo "===> Can't find target directories in $RM_STAGEDIR"
   ls -l $RM_STAGEDIR/03_TGT_NEW_var_lib
   ls -l $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
   exit 1
 fi
 
-echo "==== Archive new target directories"
+echo "     Archive new target directories"
 sudo tar -C $RM_STAGEDIR/03_TGT_NEW_var_lib            -c${V}f $RM_STAGEDIR/04_TGT_NEW_var_lib.tar            ./
 sudo tar -C $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system -c${V}f $RM_STAGEDIR/04_TGT_NEW_etc_systemd_system.tar ./
 ls -l  $RM_STAGEDIR/04_TGT_NEW_var_lib.tar
 ls -l  $RM_STAGEDIR/04_TGT_NEW_etc_systemd_system.tar
 
-echo "==== Upload new target directory archives to target machine"
+echo "     Upload new target directory archives to target machine"
 juju scp $RM_STAGEDIR/04_TGT_NEW_var_lib.tar            $RM_TGT_MACHINE_NUM:/tmp/
 juju scp $RM_STAGEDIR/04_TGT_NEW_etc_systemd_system.tar $RM_TGT_MACHINE_NUM:/tmp/
 juju ssh "$RM_TGT_MACHINE_NUM" ls -l /tmp/04_TGT_NEW*

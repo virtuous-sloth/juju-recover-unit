@@ -7,7 +7,7 @@ if [[ -z "$RM_STAGEDIR" && -d _stage ]]
 then
   export RM_STAGEDIR="_stage"
 else
-  echo "==== Did you run recover-machine-00-set-stage?"
+  echo "     Did you run recover-machine-00-set-stage?"
   exit 1
 fi
 
@@ -17,13 +17,13 @@ then
   source $RM_STAGEDIR/00-FUNCTIONS 
   source $RM_STAGEDIR/00-LOCALENV 
 else
-  echo "==== Can't find all my files:"
+  echo "     Can't find all my files:"
   ls -l $RM_STAGEDIR/00-FUNCTIONS
   ls -l $RM_STAGEDIR/00-LOCALENV
   exit 1
 fi
 
-echo "==== Archive source directories on source machine (expect and ignore 'socket ignored' warnings)"
+echo "     Archive source directories on source machine (expect and ignore 'socket ignored' warnings)"
 juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /var/lib -c${V}f /tmp/src_var_lib.tar \
                                             ./juju
 juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/src_etc_systemd_system.tar \
@@ -31,7 +31,7 @@ juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/src_
                                             ./jujud-${RM_SRC_MACHINE}.service
 juju ssh "$RM_SRC_MACHINE_NUM" ls -l /tmp/src_*.tar
 
-echo "==== Retrieve source directory archives from source machine"
+echo "     Retrieve source directory archives from source machine"
 juju scp "$RM_SRC_MACHINE_NUM":/tmp/src_var_lib.tar            $RM_STAGEDIR/01_SRC_var_lib.tar
 juju scp "$RM_SRC_MACHINE_NUM":/tmp/src_etc_systemd_system.tar $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
 ls -l $RM_STAGEDIR/01_SRC_*.tar
@@ -39,7 +39,7 @@ ls -l $RM_STAGEDIR/01_SRC_*.tar
 recover_mkdir $RM_STAGEDIR/01_SRC_var_lib
 recover_mkdir $RM_STAGEDIR/01_SRC_etc_systemd_system
 
-echo "==== Extract source directories from archives"
+echo "     Extract source directories from archives"
 sudo tar -C      $RM_STAGEDIR/01_SRC_var_lib            -x${V}f $RM_STAGEDIR/01_SRC_var_lib.tar
 sudo tar -C      $RM_STAGEDIR/01_SRC_etc_systemd_system -x${V}f $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
 echo "$RM_STAGEDIR/01_SRC_var_lib:"

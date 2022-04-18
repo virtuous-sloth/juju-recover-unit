@@ -7,7 +7,7 @@ if [[ -z "$RM_STAGEDIR" && -d _stage ]]
 then
   export RM_STAGEDIR="_stage"
 else
-  echo "==== Did you run recover-machine-00-set-stage?"
+  echo "     Did you run recover-machine-00-set-stage?"
   exit 1
 fi
 
@@ -17,13 +17,13 @@ then
   source $RM_STAGEDIR/00-FUNCTIONS
   source $RM_STAGEDIR/00-LOCALENV
 else
-  echo "==== Can't find all my files:"
+  echo "     Can't find all my files:"
   ls -l $RM_STAGEDIR/00-FUNCTIONS
   ls -l $RM_STAGEDIR/00-LOCALENV
   exit 1
 fi
 
-echo "==== Archive target directories on target machine (expect and ignore 'socket ignored' warnings)"
+echo "     Archive target directories on target machine (expect and ignore 'socket ignored' warnings)"
 juju ssh "$RM_TGT_MACHINE_NUM" sudo tar -C /var/lib -c${V}f /tmp/src_var_lib.tar \
                                                 ./juju
 juju ssh "$RM_TGT_MACHINE_NUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/src_etc_systemd_system.tar \
@@ -31,7 +31,7 @@ juju ssh "$RM_TGT_MACHINE_NUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/src_
                                                 ./jujud-${RM_TGT_MACHINE}.service
 juju ssh "$RM_TGT_MACHINE_NUM" ls -l /tmp/src_*.tar
 
-echo "==== Retrieve target directory archives from target machine"
+echo "     Retrieve target directory archives from target machine"
 juju scp "$RM_TGT_MACHINE_NUM":/tmp/src_var_lib.tar            $RM_STAGEDIR/02_TGT_BKP_var_lib.tar
 juju scp "$RM_TGT_MACHINE_NUM":/tmp/src_etc_systemd_system.tar $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
 ls -l $RM_STAGEDIR/02_TGT_BKP_*.tar
@@ -39,7 +39,7 @@ ls -l $RM_STAGEDIR/02_TGT_BKP_*.tar
 if [ -d $RM_STAGEDIR/02_TGT_BKP_var_lib ]
 then
   timestamp=$(stat --format %y $RM_STAGEDIR/02_TGT_BKP_var_lib | tr ' :' '_-')
-  echo "==== Move old staged target backup directory $RM_STAGEDIR/02_TGT_BKP_var_lib out of the way to ${RM_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}"
+  echo "     Move old staged target backup directory $RM_STAGEDIR/02_TGT_BKP_var_lib out of the way to ${RM_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}"
   sudo mv $RM_STAGEDIR/02_TGT_BKP_var_lib  ${RM_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}
   ls -ld ${RM_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}
 fi
@@ -47,7 +47,7 @@ fi
 if [ -d $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system ]
 then
   timestamp=$(stat --format %y $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system | tr ' :' '_-')
-  echo "==== Move old staged backup target directory $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system out of the way to ${RM_STAGEDIR}/02_TGT_BKP_etc_systemd_system.${timestamp}"
+  echo "     Move old staged backup target directory $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system out of the way to ${RM_STAGEDIR}/02_TGT_BKP_etc_systemd_system.${timestamp}"
   sudo mv $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
   ls -ld  $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
 fi
@@ -55,7 +55,7 @@ fi
 recover_mkdir $RM_STAGEDIR/02_TGT_BKP_var_lib
 recover_mkdir $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system
 
-echo "==== Extract target directories from archives"
+echo "     Extract target directories from archives"
 sudo tar -C      $RM_STAGEDIR/02_TGT_BKP_var_lib            -x${V}f $RM_STAGEDIR/02_TGT_BKP_var_lib.tar
 sudo tar -C      $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system -x${V}f $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
 echo "$RM_STAGEDIR/02_TGT_BKP_var_lib:"
