@@ -1,23 +1,35 @@
 #!/usr/bin/bash
 
-if [[ ! -r recover-machine-00-LOCALENV ]]
-then
-  echo "    Create recover-machine-00-LOCALENV file (see recover-machine-00-LOCALENV.sample)"
-  exit
-else
-  source recover-machine-00-LOCALENV
-fi
+[[ -z "$DEBUG" ]] || set -x # Enable debugging
+set -e # exit on error to be safe
 
-if [[ ! -d $STAGEDIR/03_TGT_var_lib_juju_agents_${SRCMACHINE_DASH}      || \
-      ! -d $STAGEDIR/03_TGT_etc_systemd_system_jujud-${SRCMACHINE_DASH} ]]
+if [[ -z "$RM_STAGEDIR" && -d _stage ]]
 then
-  echo "    Have you run recover-machine-03-edit-staged-tgt-target-directories?"
-  echo "    Can't find target directories in $STAGEDIR"
-  ls -l $STAGEDIR
+  export RM_STAGEDIR="_stage"
+else
+  echo "==== Did you run recover-machine-00-set-stage?"
   exit 1
 fi
 
-echo "    Archive directories"
-tar -C $STAGEDIR/tgt_var_lib_juju_agents_${TGTMACHINE_DASH}      -c${V}f $STAGEDIR/tgt_var_lib_juju_agents_${SRCMACHINE_DASH}.tar      .
-tar -C $STAGEDIR/tgt_etc_systemd_system_jujud_${TGTMACHINE_DASH} -c${V}f $STAGEDIR/tgt_etc_systemd_system_jujud_${SRCMACHINE_DASH}.tar . 
-ls -l $STAGEDIR/tgt_*.tar
+if [[ -r $RM_STAGEDIR/00-FUNCTIONS && \
+        -r $RM_STAGEDIR/00-LOCALENV  ]]
+then
+  source $RM_STAGEDIR/00-FUNCTIONS
+  source $RM_STAGEDIR/00-LOCALENV
+  env| grep RM_ | sort
+else
+  echo "==== Can't find all my files:"
+  ls -l $RM_STAGEDIR/00-FUNCTIONS
+  ls -l $RM_STAGEDIR/00-LOCALENV
+  exit 1
+fi
+
+if [[ ! -d $RM_STAGEDIR/03_TGT_NEW_var_lib       || \
+      ! -d $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system ]]
+then
+  echo "    Have you run recover-machine-03-edit-staged-tgt-target-directories?"
+  echo "    Can't find target directories in $RM_STAGEDIR"
+  ls -l $RM_STAGEDIR/03_TGT_NEW_var_lib
+  ls -l $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
+  exit 1
+fi
