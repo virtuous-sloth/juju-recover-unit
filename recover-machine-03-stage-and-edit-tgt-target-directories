@@ -1,5 +1,28 @@
 #!/usr/bin/bash
 
+[[ -z "$DEBUG" ]] || set -x # Enable debugging
+set -e # exit on error to be safe
+
+if [[ -z "$RM_STAGEDIR" && -d _stage ]]
+then
+  export RM_STAGEDIR="_stage"
+else
+  echo "==== Did you run recover-machine-00-set-stage?"
+  exit 1
+fi
+
+if [[ -r $RM_STAGEDIR/00-FUNCTIONS && \
+        -r $RM_STAGEDIR/00-LOCALENV  ]]
+then
+  source $RM_STAGEDIR/00-FUNCTIONS
+  source $RM_STAGEDIR/00-LOCALENV
+else
+  echo "==== Can't find all my files:"
+  ls -l $RM_STAGEDIR/00-FUNCTIONS
+  ls -l $RM_STAGEDIR/00-LOCALENV
+  exit 1
+fi
+
 if [[ ! -r "$RM_STAGEDIR/01_SRC_var_lib.tar" ||   \
       ! -r "$RM_STAGEDIR/01_SRC_etc_systemd_system.tar" ]]
 then
