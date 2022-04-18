@@ -1,18 +1,26 @@
 #!/usr/bin/bash
 
-if [[ ! -d "$RM_STAGEDIR" ]]
+[[ -z "$DEBUG" ]] || set -x # Enable debugging
+set -e # exit on error to be safe
+
+if [[ -z "$RM_STAGEDIR" && -d _stage ]]
 then
-  echo -e "\n    Did you run recover-machine-00-set-stage?"
+  export RM_STAGEDIR="_stage"
+else
+  echo "==== Did you run recover-machine-00-set-stage?"
   exit 1
-elif [[ -r $RM_STAGEDIR/00-FUNCTIONS && \
+fi
+
+if [[ -r $RM_STAGEDIR/00-FUNCTIONS && \
         -r $RM_STAGEDIR/00-LOCALENV  ]]
 then
   source $RM_STAGEDIR/00-FUNCTIONS
   source $RM_STAGEDIR/00-LOCALENV
 else
-  echo -e "\n    Can't find all my files:"
+  echo "==== Can't find all my files:"
   ls -l $RM_STAGEDIR/00-FUNCTIONS
   ls -l $RM_STAGEDIR/00-LOCALENV
+  exit 1
 fi
 
 echo -e "\n    Archive target directories on target machine"
