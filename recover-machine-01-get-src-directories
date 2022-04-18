@@ -24,16 +24,16 @@ else
 fi
 
 echo "     Archive source directories on source machine (expect and ignore 'socket ignored' warnings)"
-juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /var/lib -c${V}f /tmp/src_var_lib.tar \
+juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /var/lib -c${V}f /tmp/RM_var_lib.tar \
                                             ./juju
-juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/src_etc_systemd_system.tar \
+juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/RM_etc_systemd_system.tar \
                                             ./jujud-${RM_SRC_MACHINE}-exec-start.sh \
                                             ./jujud-${RM_SRC_MACHINE}.service
-juju ssh "$RM_SRC_MACHINE_NUM" ls -l /tmp/src_*.tar
+juju ssh "$RM_SRC_MACHINE_NUM" ls -l /tmp/RM_*.tar
 
 echo "     Retrieve source directory archives from source machine"
-juju scp "$RM_SRC_MACHINE_NUM":/tmp/src_var_lib.tar            $RM_STAGEDIR/01_SRC_var_lib.tar
-juju scp "$RM_SRC_MACHINE_NUM":/tmp/src_etc_systemd_system.tar $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
+juju scp "$RM_SRC_MACHINE_NUM":/tmp/RM_var_lib.tar            $RM_STAGEDIR/01_SRC_var_lib.tar
+juju scp "$RM_SRC_MACHINE_NUM":/tmp/RM_etc_systemd_system.tar $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
 ls -l $RM_STAGEDIR/01_SRC_*.tar
 
 recover_mkdir $RM_STAGEDIR/01_SRC_var_lib
