@@ -34,6 +34,12 @@ then
   exit 1
 fi
 
+echo "==== Archive new target directories"
+sudo tar -C $RM_STAGEDIR/03_TGT_NEW_var_lib            -c${V}f $RM_STAGEDIR/03_TGT_NEW_var_lib.tar            ./
+sudo tar -C $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system -c${V}f $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system.tar ./
+ls -l  $RM_STAGEDIR/03_TGT_NEW_var_lib.tar
+ls -l  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system.tar
+
 echo "Upload new target directory archives to target machine"
 juju scp $RM_STAGEDIR/03_TGT_NEW_var_lib.tar            $RM_TGT_MACHINE_NUM:/tmp/
 juju scp $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system.tar $RM_TGT_MACHINE_NUM:/tmp/
