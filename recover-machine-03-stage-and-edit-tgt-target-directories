@@ -64,12 +64,9 @@ sudo sudo sed -i "s/${RM_SRC_MACHINE}/${RM_TGT_MACHINE}/g" $RM_STAGEDIR/03_TGT_N
 
 echo "==== Diff of directories"
 set +e # Temporarily don't exit on error because we expect diff to find differences
-sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_var_lib $RM_STAGEDIR/03_TGT_NEW_var_lib
-sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
-set -e # Exit on error again
+sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_SRC_MACHINE}/agent.conf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_TGT_MACHINE}/agent.conf
+sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-*.sh      $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-*.sh
+sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-*.service $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-*.service
 
-echo "==== Archive new target directories"
-sudo tar -C $RM_STAGEDIR/03_TGT_NEW_var_lib            -c${V}f $RM_STAGEDIR/03_TGT_NEW_var_lib.tar            ./
-sudo tar -C $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system -c${V}f $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system.tar ./
-ls -l  $RM_STAGEDIR/03_TGT_NEW_var_lib.tar
-ls -l  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system.tar
+echo "#### If any further edits or changes are needed, either add to this script and rerun or"
+echo "#### manually edit/change $RM_STAGEDIR/03_TGT_NEW_* files as needed and proceed with next step."
