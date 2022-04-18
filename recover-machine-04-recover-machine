@@ -33,3 +33,8 @@ then
   ls -l $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
   exit 1
 fi
+
+echo "Upload new target directory archives to target machine"
+juju scp $RM_STAGEDIR/03_TGT_NEW_var_lib.tar            $RM_TGT_MACHINE_NUM:/tmp/
+juju scp $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system.tar $RM_TGT_MACHINE_NUM:/tmp/
+juju ssh "$RM_TGT_MACHINE_NUM" ls -l /tmp/03_TGT_NEW*
