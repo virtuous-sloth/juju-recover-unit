@@ -179,7 +179,6 @@ db.machines.find({"model-uuid": "$RM_MODEL_UUID", "machineid": "$RM_TGT_MACHINE_
 END
 juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
 RM_TGT_MACHINE_NONCE=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .nonce)
-juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r'
 echo "===> Got $RM_TGT_MACHINE_NONCE"
 
 echo "     Populate local environment file"
