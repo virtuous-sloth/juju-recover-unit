@@ -52,7 +52,7 @@ juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
 juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r'
 
 echo "     Enable and start juju systemd units on target machine"
-juju ssh $RM_TGT_MACHINE_NUM 'sudo systemctl daemon-reload'
-juju ssh $RM_TGT_MACHINE_NUM 'for i in $(systemctl --all list-unit-files    jujud*service | awk "/jujud.*service/{print \$1}"); do sudo systemctl enable $i; done'
-juju ssh $RM_TGT_MACHINE_NUM 'for i in $(systemctl --all show --property=Id jujud*service | awk -F= "{print \$2}");             do sudo systemctl start  $i; done'
+juju ssh $RM_INSTALLING_UNIT 'sudo systemctl daemon-reload'
+juju ssh $RM_INSTALLING_UNIT "sudo systemctl enable  jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
+juju ssh $RM_INSTALLING_UNIT "sudo systemctl start   jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
 

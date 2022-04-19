@@ -41,6 +41,6 @@ ls -l  $RM_STAGEDIR/04_TGT_NEW_var_lib.tar
 ls -l  $RM_STAGEDIR/04_TGT_NEW_etc_systemd_system.tar
 
 echo "     Upload new target directory archives to target machine"
-juju scp $RM_STAGEDIR/04_TGT_NEW_var_lib.tar            $RM_TGT_MACHINE_NUM:/tmp/
-juju scp $RM_STAGEDIR/04_TGT_NEW_etc_systemd_system.tar $RM_TGT_MACHINE_NUM:/tmp/
-juju ssh "$RM_TGT_MACHINE_NUM" ls -l /tmp/04_TGT_NEW*
+juju scp $RM_STAGEDIR/04_TGT_NEW_var_lib.tar            $RM_INSTALLING_UNIT:/tmp/
+juju scp $RM_STAGEDIR/04_TGT_NEW_etc_systemd_system.tar $RM_INSTALLING_UNIT:/tmp/
+juju ssh "$RM_INSTALLING_UNIT" ls -l /tmp/04_TGT_NEW*
