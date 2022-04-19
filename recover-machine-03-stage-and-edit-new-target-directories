@@ -52,18 +52,22 @@ echo "     Edit new target files"
 sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME} $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}
 sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RM_ACTIVE_UNIT_FILENAME}  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RM_INSTALLING_UNIT_FILENAME}
 sudo sed -i "s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/g" $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}/agent.conf
+sudo sed -i "s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/g" $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}/.venv/bin/activate*
 sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}-exec-start.sh $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}-exec-start.sh
 sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}.service       $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}.service
 sudo sed -i "s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/g" $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}*
 
 echo "     Diff of directories"
 set +e # Temporarily don't exit on error because we expect diff to find differences
-sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME}/agent.conf \
-                                                 $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}/agent.conf
-sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}-exec-start.sh \
-                                                 $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}-exec-start.sh
-sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}.service \
-                                                 $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}.service
+for i in $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME}/agent.conf           \
+         $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME}/.venv/bin/activate* \
+         $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}-exec-start.sh   \
+         $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}.service
+do
+  j=$(echo $i | sed -e "s/01_SRC/03_TGT_NEW/; s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/")
+  sudo diff --recursive --unified --no-dereference $i $j
+done > $RM_STAGEDIR/03-diffs.log 2>&1
+echo "===> Diffs are in $RM_STAGEDIR/03-diffs.log"
 
 echo "#### If any further edits or changes are needed, either add to this script and rerun or"
 echo "#### manually edit/change $RM_STAGEDIR/03_TGT_NEW_* files as needed and proceed with next step."
