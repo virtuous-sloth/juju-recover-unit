@@ -23,23 +23,24 @@ else
   exit 1
 fi
 
-echo "     Archive source directories on source machine (expect and ignore 'socket ignored' warnings)"
-juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /var/lib -c${V}f /tmp/RM_var_lib.tar \
-                                            ./juju
-juju ssh "$RM_SRC_MACHINE_NUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/RM_etc_systemd_system.tar \
-                                            ./jujud-${RM_SRC_MACHINE}-exec-start.sh \
-                                            ./jujud-${RM_SRC_MACHINE}.service
-juju ssh "$RM_SRC_MACHINE_NUM" ls -l /tmp/RM_*.tar
+echo "     Archive active unit directories (expect and ignore 'socket ignored' warnings)"
+juju ssh "$RM_ACTIVE_UNIT" sudo tar -C /var/lib -c${V}f /tmp/RM_var_lib.tar \
+                                             ./juju/agents/$RM_ACTIVE_UNIT_FILENAME \
+                                             ./juju/tools/$RM_ACTIVE_UNIT_FILENAME
+juju ssh "$RM_ACTIVE_UNIT" sudo tar -C /etc/systemd/system -c${V}f /tmp/RM_etc_systemd_system.tar \
+                                            ./jujud-${RM_ACTIVE_UNIT_FILENAME}-exec-start.sh \
+                                            ./jujud-${RM_ACTIVE_UNIT_FILENAME}.service
+juju ssh "$RM_ACTIVE_UNIT" ls -l /tmp/RM_*.tar
 
-echo "     Retrieve source directory archives from source machine"
-juju scp "$RM_SRC_MACHINE_NUM":/tmp/RM_var_lib.tar            $RM_STAGEDIR/01_SRC_var_lib.tar
-juju scp "$RM_SRC_MACHINE_NUM":/tmp/RM_etc_systemd_system.tar $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
+echo "     Retrieve active unit directory archives"
+juju scp "$RM_ACTIVE_UNIT":/tmp/RM_var_lib.tar            $RM_STAGEDIR/01_SRC_var_lib.tar
+juju scp "$RM_ACTIVE_UNIT":/tmp/RM_etc_systemd_system.tar $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
 ls -l $RM_STAGEDIR/01_SRC_*.tar
 
 recover_mkdir $RM_STAGEDIR/01_SRC_var_lib
 recover_mkdir $RM_STAGEDIR/01_SRC_etc_systemd_system
 
-echo "     Extract source directories from archives"
+echo "     Extract active unit directories from archives"
 sudo tar -C      $RM_STAGEDIR/01_SRC_var_lib            -x${V}f $RM_STAGEDIR/01_SRC_var_lib.tar
 sudo tar -C      $RM_STAGEDIR/01_SRC_etc_systemd_system -x${V}f $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
 echo "$RM_STAGEDIR/01_SRC_var_lib:"

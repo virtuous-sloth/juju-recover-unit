@@ -35,13 +35,13 @@ then
 fi
 
 echo "     Stop and disable juju systemd units on target machine"
-juju ssh $RM_TGT_MACHINE_NUM 'for i in $(systemctl --all show --property=Id jujud*service | awk -F= "{print \$2}");             do sudo systemctl stop    $i; done'
-juju ssh $RM_TGT_MACHINE_NUM 'for i in $(systemctl --all list-unit-files    jujud*service | awk "/jujud.*service/{print \$1}"); do sudo systemctl disable $i; done'
-juju ssh $RM_TGT_MACHINE_NUM 'sudo systemctl daemon-reload'
+juju ssh $RM_INSTALLING_UNIT "systemctl stop    jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
+juju ssh $RM_INSTALLING_UNIT "systemctl disable jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
+juju ssh $RM_INSTALLING_UNIT 'sudo systemctl daemon-reload'
 
 echo "     Extract archived directories"
-juju ssh $RM_TGT_MACHINE_NUM 'sudo tar -xvf /tmp/04_TGT_NEW_var_lib.tar             -C /var/lib            --skip-old-files --keep-directory-symlink --dereference'
-juju ssh $RM_TGT_MACHINE_NUM 'sudo tar -xvf /tmp/04_TGT_NEW_etc_systemd_system.tar -C /etc/systemd/system --skip-old-files --keep-directory-symlink --dereference'
+juju ssh $RM_INSTALLING_UNIT 'sudo tar -xvf /tmp/04_TGT_NEW_var_lib.tar            -C /var/lib            --skip-old-files --keep-directory-symlink --dereference'
+juju ssh $RM_INSTALLING_UNIT 'sudo tar -xvf /tmp/04_TGT_NEW_etc_systemd_system.tar -C /etc/systemd/system --skip-old-files --keep-directory-symlink --dereference'
 
 echo "     Update machine password"
 cat <<END > $RM_STAGEDIR/00-MONGO_CODE

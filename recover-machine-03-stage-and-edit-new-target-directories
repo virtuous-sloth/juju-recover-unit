@@ -49,25 +49,21 @@ echo $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system:
 ls -l  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
 
 echo "     Edit new target files"
-sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/unit*
-sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/meter-status.yaml
-sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/locks/*
-sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/unit*
-sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/metricspool
-sudo rm -rf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/nonce.txt
-sudo sh -c "echo $RM_TGT_MACHINE_NONCE > $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/nonce.txt"
-sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_SRC_MACHINE} $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_TGT_MACHINE}
-sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RM_SRC_MACHINE}  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RM_TGT_MACHINE}
-sudo sed -i "s/${RM_SRC_MACHINE}/${RM_TGT_MACHINE}/g" $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_TGT_MACHINE}/agent.conf
-sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_SRC_MACHINE}-exec-start.sh $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_TGT_MACHINE}-exec-start.sh
-sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_SRC_MACHINE}.service       $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_TGT_MACHINE}.service
-sudo sed -i "s/${RM_SRC_MACHINE}/${RM_TGT_MACHINE}/g" $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_TGT_MACHINE}*
+sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME} $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}
+sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RM_ACTIVE_UNIT_FILENAME}  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RM_INSTALLING_UNIT_FILENAME}
+sudo sed -i "s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/g" $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}/agent.conf
+sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}-exec-start.sh $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}-exec-start.sh
+sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}.service       $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}.service
+sudo sed -i "s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/g" $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}*
 
 echo "     Diff of directories"
 set +e # Temporarily don't exit on error because we expect diff to find differences
-sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_SRC_MACHINE}/agent.conf $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_TGT_MACHINE}/agent.conf
-sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-*.sh      $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-*.sh
-sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-*.service $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-*.service
+sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME}/agent.conf \
+                                                 $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}/agent.conf
+sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}-exec-start.sh \
+                                                 $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}-exec-start.sh
+sudo diff --recursive --unified --no-dereference $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}.service \
+                                                 $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}.service
 
 echo "#### If any further edits or changes are needed, either add to this script and rerun or"
 echo "#### manually edit/change $RM_STAGEDIR/03_TGT_NEW_* files as needed and proceed with next step."

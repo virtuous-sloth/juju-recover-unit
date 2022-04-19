@@ -24,16 +24,19 @@ else
 fi
 
 echo "     Archive target directories on target machine (expect and ignore 'socket ignored' warnings)"
-juju ssh "$RM_TGT_MACHINE_NUM" sudo tar -C /var/lib -c${V}f /tmp/RM_var_lib.tar \
-                                                ./juju
-juju ssh "$RM_TGT_MACHINE_NUM" sudo tar -C /etc/systemd/system -c${V}f /tmp/RM_etc_systemd_system.tar \
-                                                ./jujud-${RM_TGT_MACHINE}-exec-start.sh \
-                                                ./jujud-${RM_TGT_MACHINE}.service
-juju ssh "$RM_TGT_MACHINE_NUM" ls -l /tmp/RM_*.tar
+set +e # These are expected to error but we try anyway
+juju ssh "$RM_INSTALLING_UNIT" sudo tar -C /var/lib -c${V}f /tmp/RM_var_lib.tar \
+                                                ./juju/agents/${RM_INSTALLING_UNIT_FILENAME} \
+                                                ./juju/tools/${RM_INSTALLING_UNIT_FILENAME}
+juju ssh "$RM_INSTALLING_UNIT" sudo tar -C /etc/systemd/system -c${V}f /tmp/RM_etc_systemd_system.tar \
+                                                ./jujud-${RM_INSTALLING_UNIT_FILENAME}-exec-start.sh \
+                                                ./jujud-${RM_INSTALLING_UNIT_FILENAME}.service
+juju ssh "$RM_INSTALLING_UNIT" ls -l /tmp/RM_*.tar
+set -e
 
 echo "     Retrieve target directory archives from target machine"
-juju scp "$RM_TGT_MACHINE_NUM":/tmp/RM_var_lib.tar            $RM_STAGEDIR/02_TGT_BKP_var_lib.tar
-juju scp "$RM_TGT_MACHINE_NUM":/tmp/RM_etc_systemd_system.tar $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
+juju scp "$RM_INSTALLING_UNIT":/tmp/RM_var_lib.tar            $RM_STAGEDIR/02_TGT_BKP_var_lib.tar
+juju scp "$RM_INSTALLING_UNIT":/tmp/RM_etc_systemd_system.tar $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
 ls -l $RM_STAGEDIR/02_TGT_BKP_*.tar
 
 if [ -d $RM_STAGEDIR/02_TGT_BKP_var_lib ]

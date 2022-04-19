@@ -74,27 +74,31 @@ RM_APPLICATION=$(cat $RM_STAGEDIR/00-status.json \
              )
 echo "===> Got $RM_APPLICATION"
 
-echo "     Get target machine with application installing agent from $RM_STAGEDIR/00-status.json"
-RM_TGT_MACHINE_NUM=$(cat $RM_STAGEDIR/00-status.json \
-               | jq -r '.applications[]?.units[]?
-                       | select(.subordinates != null)
-                       | select(.subordinates[]."workload-status".message == "installing agent").machine
-                       ' \
-               )
-echo "===> Got $RM_TGT_MACHINE_NUM"
+echo "     Get unit that is stuck installing from $RM_STAGEDIR/00-status.json"
+RM_INSTALLING_UNIT=$(cat $RM_STAGEDIR/00-status.json \
+             | jq -r '.applications[]?.units[]? 
+                      | select(.subordinates != null) 
+                      | .subordinates 
+                      | {unit: keys[], message: .[]."workload-status".message}
+                      | select(.message=="installing agent") | .unit
+                     ' \
+             )
+echo "===> Got $RM_INSTALLING_UNIT"
 
-echo "     Get source machine with application active from $RM_STAGEDIR/00-status.json"
-RM_SRC_MACHINE_NUM=$(cat $RM_STAGEDIR/00-status.json \
-               | jq -r '.applications[]?.units[]?
-                       | select(.subordinates != null)
-                       | select(.subordinates[]."workload-status".current == "active").machine
-                       ' \
-               | tail -1
-               )
-echo "===> Got $RM_SRC_MACHINE_NUM"
+echo "     Get unit that is from $RM_STAGEDIR/00-status.json"
+RM_ACTIVE_UNIT=$(cat $RM_STAGEDIR/00-status.json \
+             | jq -r '.applications[]?.units[]? 
+                      | select(.subordinates != null) 
+                      | .subordinates 
+                      | {unit: keys[], current: .[]."workload-status".current}
+                      | select(.current=="active") | .unit
+                     ' \
+             | tail -1 \
+             )
+echo "===> Got $RM_ACTIVE_UNIT"
 
-RM_TGT_MACHINE=machine-$RM_TGT_MACHINE_NUM
-RM_SRC_MACHINE=machine-$RM_SRC_MACHINE_NUM
+RM_ACTIVE_UNIT_FILENAME=unit-$(echo $RM_ACTIVE_UNIT | tr / -)
+RM_INSTALLING_UNIT_FILENAME=unit-$(echo $RM_INSTALLING_UNIT | tr / -)
 
 echo "     Get first started controller num"
 RM_CTRLR_NUM=$(juju machines -m controller | awk '/started/{print $1}' | head -n1) # grab first started controller _NUM
@@ -171,24 +175,6 @@ END
 juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
 RM_MODEL_UUID=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r ._id)
 echo "===> Got $RM_MODEL_UUID"
-
-echo "     Get target machine nonce from primary controller mongo db"
-cat <<END > $RM_STAGEDIR/00-MONGO_CODE
-use juju
-db.machines.find({"model-uuid": "$RM_MODEL_UUID", "machineid": "$RM_TGT_MACHINE_NUM"}, {"nonce": 1})
-END
-juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
-RM_TGT_MACHINE_NONCE=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .nonce)
-echo "===> Got $RM_TGT_MACHINE_NONCE"
-
-echo "     Get source machine password hash"
-cat <<END > $RM_STAGEDIR/00-MONGO_CODE
-use juju
-db.machines.find({"model-uuid": "$RM_MODEL_UUID", "machineid": "$RM_SRC_MACHINE_NUM"}, {"passwordhash": 1})
-END
-juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
-RM_SRC_MACHINE_HASH=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
-echo "===> Got $RM_SRC_MACHINE_HASH"
 
 echo "     Populate local environment file"
 for keyval in $(declare | grep ^RM_ | sort)
