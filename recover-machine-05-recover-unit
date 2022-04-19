@@ -43,10 +43,10 @@ echo "     Extract archived directories"
 juju ssh $RM_INSTALLING_UNIT 'sudo tar -xvf /tmp/04_TGT_NEW_var_lib.tar            -C /var/lib            --skip-old-files --keep-directory-symlink --dereference'
 juju ssh $RM_INSTALLING_UNIT 'sudo tar -xvf /tmp/04_TGT_NEW_etc_systemd_system.tar -C /etc/systemd/system --skip-old-files --keep-directory-symlink --dereference'
 
-echo "     Update machine password"
+echo "     Update unit password"
 cat <<END > $RM_STAGEDIR/00-MONGO_CODE
 use juju
-db.machines.update({"model-uuid": "$RM_MODEL_UUID", "machineid": "$RM_TGT_MACHINE_NUM"}, {\$set:{"passwordhash": "$RM_MACHINE_HASH"}})
+db.units.update({"_id": "${RM_MODEL_UUID}:${RM_INSTALLING_UNIT}"}, {\$set:{"passwordhash": "$RM_ACTIVE_UNIT_PWHASH"}})
 END
 juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
 juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r'
