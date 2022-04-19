@@ -35,8 +35,8 @@ then
 fi
 
 echo "     Stop and disable juju systemd units on target machine"
-juju ssh $RM_INSTALLING_UNIT "systemctl stop    jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
-juju ssh $RM_INSTALLING_UNIT "systemctl disable jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
+juju ssh $RM_INSTALLING_UNIT "sudo systemctl stop    jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
+juju ssh $RM_INSTALLING_UNIT "sudo systemctl disable jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
 juju ssh $RM_INSTALLING_UNIT 'sudo systemctl daemon-reload'
 
 echo "     Extract archived directories"
