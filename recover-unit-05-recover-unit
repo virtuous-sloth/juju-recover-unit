@@ -40,8 +40,8 @@ juju ssh $RU_INSTALLING_UNIT "sudo systemctl disable jujud-${RU_INSTALLING_UNIT_
 juju ssh $RU_INSTALLING_UNIT 'sudo systemctl daemon-reload'
 
 echo "     Extract archived directories"
-juju ssh $RU_INSTALLING_UNIT 'sudo tar -xvf /tmp/04_TGT_NEW_var_lib.tar            -C /var/lib            --skip-old-files --keep-directory-symlink --dereference'
-juju ssh $RU_INSTALLING_UNIT 'sudo tar -xvf /tmp/04_TGT_NEW_etc_systemd_system.tar -C /etc/systemd/system --skip-old-files --keep-directory-symlink --dereference'
+juju ssh $RU_INSTALLING_UNIT 'sudo tar -x${V}f /tmp/04_TGT_NEW_var_lib.tar            -C /var/lib            --skip-old-files --keep-directory-symlink --dereference'
+juju ssh $RU_INSTALLING_UNIT 'sudo tar -x${V}f /tmp/04_TGT_NEW_etc_systemd_system.tar -C /etc/systemd/system --skip-old-files --keep-directory-symlink --dereference'
 
 echo "     Update unit password"
 cat <<END > $RU_STAGEDIR/00-MONGO_CODE
