@@ -8,7 +8,8 @@ local information needed by the remaining scripts.
   - When run multiple times, will rename old \_stage directory
 - Gathers information about the local environment
 - Stores that information in files named \_stage/00*
-- Usage:
+
+### Usage
 ```
 Usage: recover-unit-00-set-stage model
        where model is the model name to check
@@ -22,42 +23,42 @@ Usage: recover-unit-00-set-stage model
        or:
          DEBUG=1 recover-unit-00-set-stage modelname
 ```
-- Example environment:
-  - Active unit is a unit of the subordinate charm that is in an active state
+### Example Environment Variables Generated
+- Active unit is a unit of the subordinate charm that is in an active state
 ```bash
 export RU_ACTIVE_UNIT=canonical-livepatch/1
 export RU_ACTIVE_UNIT_FILENAME=unit-canonical-livepatch-1
 export RU_ACTIVE_UNIT_PWHASH=aCIe/WXewR4yMuqyHL7F2gPR
 ```
-  - Application of the subordinate charm that is stuck
+- Application of the subordinate charm that is stuck
   - Key-handling code has hard-coding to canonical-livepatch
 ```bash
 export RU_APPLICATION=canonical-livepatch
 export RU_APPLICATION_KEY=2840b051faf67443a8182526dfdb216e
 ```
-  - Juju controller:
-    - The code tries to get the primary controller for R/W MongoDB tasks
+- Juju controller:
+  - The code tries to get the primary controller for R/W MongoDB tasks
 ```bash
 export RU_CTRLR_IP=10.5.3.120
 export RU_CTRLR_NUM=0
 ```
-  - Installing unit is the one stuck:
+- Installing unit is the one stuck:
 ```bash
 export RU_INSTALLING_UNIT=canonical-livepatch/0
 export RU_INSTALLING_UNIT_FILENAME=unit-canonical-livepatch-0
 export RU_INSTALLING_UNIT_PWHASH=a2Tcsel9QQbwDVFJyVa5lWUW
 ```
-  - Model:
+- Model:
 ```bash
 export RU_MODEL_NAME=default
 export RU_MODEL_UUID=309ea7a7-00c1-415a-8d02-b62a548d4755
 ```
-  - MongoDB:
+- MongoDB:
 ```bash
 export RU_MONGO_EXEC=/snap/bin/juju-db.mongo
 export RU_MONGO_PW=pXhyKcRk8nm5UCSasm1eW555
 ```
-  - Staging directory:
+- Staging directory:
 ```bash
 export RU_STAGEDIR=_stage
 ```
