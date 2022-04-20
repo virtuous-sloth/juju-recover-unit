@@ -18,7 +18,7 @@ if [ "$#" -ne 1 ]; then
 	       where model is the model name to check
 	
 	       You can control the staging directory location:
-	         export RM_STAGEDIR=_stage
+	         export RU_STAGEDIR=_stage
 	
 	       You can enable debugging:
 	         export DEBUG=1
@@ -29,15 +29,15 @@ if [ "$#" -ne 1 ]; then
   exit 0
 else
   echo "     Get model name"
-  RM_MODEL_NAME=$1
-  echo "===> Got $RM_MODEL_NAME"
+  RU_MODEL_NAME=$1
+  echo "===> Got $RU_MODEL_NAME"
 fi
-echo "     Switch Juju to $RM_MDOEL_NAME"
-juju switch $RM_MODEL_NAME
+echo "     Switch Juju to $RU_MDOEL_NAME"
+juju switch $RU_MODEL_NAME
 
-if [[ -z "$RM_STAGEDIR" ]]
+if [[ -z "$RU_STAGEDIR" ]]
 then
-  export RM_STAGEDIR="_stage"
+  export RU_STAGEDIR="_stage"
 fi
 
 # Define functions here:
@@ -56,26 +56,26 @@ function recover_mkdir
   mkdir -p $dir
   ls -ld $dir
 }
-recover_mkdir $RM_STAGEDIR
+recover_mkdir $RU_STAGEDIR
 # Dump functions in file to be sourced by other scripts:
 echo "     Create function file"
-declare -f recover_mkdir > $RM_STAGEDIR/00-FUNCTIONS
-ls -l $RM_STAGEDIR/00-FUNCTIONS
+declare -f recover_mkdir > $RU_STAGEDIR/00-FUNCTIONS
+ls -l $RU_STAGEDIR/00-FUNCTIONS
 
-echo "     Get juju status and store it in $RM_STAGEDIR/00-status.json"
-juju status --format json > $RM_STAGEDIR/00-status.json
-ls -l $RM_STAGEDIR/00-status.json
+echo "     Get juju status and store it in $RU_STAGEDIR/00-status.json"
+juju status --format json > $RU_STAGEDIR/00-status.json
+ls -l $RU_STAGEDIR/00-status.json
 
-echo "     Get application that is stuck installing from $RM_STAGEDIR/00-status.json"
-RM_APPLICATION=$(cat $RM_STAGEDIR/00-status.json \
+echo "     Get application that is stuck installing from $RU_STAGEDIR/00-status.json"
+RU_APPLICATION=$(cat $RU_STAGEDIR/00-status.json \
              | jq -r '.applications[]
                      | select(."application-status".message == "installing agent")."charm-name"
                      ' \
              )
-echo "===> Got $RM_APPLICATION"
+echo "===> Got $RU_APPLICATION"
 
-echo "     Get unit that is stuck installing from $RM_STAGEDIR/00-status.json"
-RM_INSTALLING_UNIT=$(cat $RM_STAGEDIR/00-status.json \
+echo "     Get unit that is stuck installing from $RU_STAGEDIR/00-status.json"
+RU_INSTALLING_UNIT=$(cat $RU_STAGEDIR/00-status.json \
              | jq -r '.applications[]?.units[]? 
                       | select(.subordinates != null) 
                       | .subordinates 
@@ -83,10 +83,10 @@ RM_INSTALLING_UNIT=$(cat $RM_STAGEDIR/00-status.json \
                       | select(.message=="installing agent") | .unit
                      ' \
              )
-echo "===> Got $RM_INSTALLING_UNIT"
+echo "===> Got $RU_INSTALLING_UNIT"
 
-echo "     Get unit that is from $RM_STAGEDIR/00-status.json"
-RM_ACTIVE_UNIT=$(cat $RM_STAGEDIR/00-status.json \
+echo "     Get unit that is from $RU_STAGEDIR/00-status.json"
+RU_ACTIVE_UNIT=$(cat $RU_STAGEDIR/00-status.json \
              | jq -r '.applications[]?.units[]? 
                       | select(.subordinates != null) 
                       | .subordinates 
@@ -95,111 +95,111 @@ RM_ACTIVE_UNIT=$(cat $RM_STAGEDIR/00-status.json \
                      ' \
              | tail -1 \
              )
-echo "===> Got $RM_ACTIVE_UNIT"
+echo "===> Got $RU_ACTIVE_UNIT"
 
-RM_ACTIVE_UNIT_FILENAME=unit-$(echo $RM_ACTIVE_UNIT | tr / -)
-RM_INSTALLING_UNIT_FILENAME=unit-$(echo $RM_INSTALLING_UNIT | tr / -)
+RU_ACTIVE_UNIT_FILENAME=unit-$(echo $RU_ACTIVE_UNIT | tr / -)
+RU_INSTALLING_UNIT_FILENAME=unit-$(echo $RU_INSTALLING_UNIT | tr / -)
 
 echo "     Get first started controller num"
-RM_CTRLR_NUM=$(juju machines -m controller | awk '/started/{print $1}' | head -n1) # grab first started controller _NUM
-echo "===> Got $RM_CTRLR_NUM"
+RU_CTRLR_NUM=$(juju machines -m controller | awk '/started/{print $1}' | head -n1) # grab first started controller _NUM
+echo "===> Got $RU_CTRLR_NUM"
 
 echo "     Get first controller mongo password"
-RM_MONGO_PW=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
-echo "===> Got $RM_MONGO_PW"
+RU_MONGO_PW=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
+echo "===> Got $RU_MONGO_PW"
 
 echo "     Get first controller mongo client executable using executable name mongo"
-RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which mongo | tr -d '\r')
-if [[ -z "$RM_MONGO_EXEC" ]]
+RU_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM which mongo | tr -d '\r')
+if [[ -z "$RU_MONGO_EXEC" ]]
 then
   echo "===> Mongo client executable not found with name 'mongo'"
   echo "     Get first controller mongo client executable using executable name juju-db.mongo"
-  RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which juju-db.mongo | tr -d '\r')
-  if [[ -z "$RM_MONGO_EXEC" ]]
+  RU_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM which juju-db.mongo | tr -d '\r')
+  if [[ -z "$RU_MONGO_EXEC" ]]
   then
     echo "Failed to find mongo client executable."
     exit 2
   fi
 fi
-echo "===> Got $RM_MONGO_EXEC"
+echo "===> Got $RU_MONGO_EXEC"
 
-echo "     Upload RM_STAGEDIR/00-MONGO_RUN-CODE to first controller to facilitate mongo db queries."
-cat <<END > $RM_STAGEDIR/00-MONGO_RUN-CODE
-$RM_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RM_CTRLR_NUM -p $RM_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
+echo "     Upload RU_STAGEDIR/00-MONGO_RUN-CODE to first controller to facilitate mongo db queries."
+cat <<END > $RU_STAGEDIR/00-MONGO_RUN-CODE
+$RU_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RU_CTRLR_NUM -p $RU_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
 END
-juju scp -m controller $RM_STAGEDIR/00-MONGO_RUN-CODE "$RM_CTRLR_NUM":/tmp/
+juju scp -m controller $RU_STAGEDIR/00-MONGO_RUN-CODE "$RU_CTRLR_NUM":/tmp/
 
 echo "     Get primary controller IP from first controller mongo db"
-cat <<END > $RM_STAGEDIR/00-MONGO_CODE
+cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
 rs.isMaster()['primary']
 END
-juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
-RM_CTRLR_IP=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1 | awk -F: '{print $1}')
-echo "===> Got $RM_CTRLR_IP"
+juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
+RU_CTRLR_IP=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1 | awk -F: '{print $1}')
+echo "===> Got $RU_CTRLR_IP"
 
 echo "     Get primary controller num"
-RM_CTRLR_NUM=$(juju machines -m controller | awk -v ip=$RM_CTRLR_IP '$0 ~ ip {print $1}' | head -n1) # grab primary controller NUM using IP
-echo "===> Got $RM_CTRLR_NUM"
+RU_CTRLR_NUM=$(juju machines -m controller | awk -v ip=$RU_CTRLR_IP '$0 ~ ip {print $1}' | head -n1) # grab primary controller NUM using IP
+echo "===> Got $RU_CTRLR_NUM"
 
 echo "     Get primary controller mongo password"
-RM_MONGO_PW=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
-echo "===> Got $RM_MONGO_PW"
+RU_MONGO_PW=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
+echo "===> Got $RU_MONGO_PW"
 
 echo "     Get primary controller mongo client executable using executable name mongo"
-RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which mongo | tr -d '\r')
-if [[ -z "$RM_MONGO_EXEC" ]]
+RU_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM which mongo | tr -d '\r')
+if [[ -z "$RU_MONGO_EXEC" ]]
 then
   echo "===> Mongo client executable not found with name 'mongo'"
   echo "     Get first controller mongo client executable using executable name juju-db.mongo"
-  RM_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM which juju-db.mongo | tr -d '\r')
-  if [[ -z "$RM_MONGO_EXEC" ]]
+  RU_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM which juju-db.mongo | tr -d '\r')
+  if [[ -z "$RU_MONGO_EXEC" ]]
   then
     echo "Failed to find mongo client executable."
     exit 2
   fi
 fi
-echo "===> Got $RM_MONGO_EXEC"
+echo "===> Got $RU_MONGO_EXEC"
 
-echo "     Upload $RM_STAGEDIR/00-MONGO_RUN-CODE to primary controller to facilitate mongo db queries."
-cat <<END > $RM_STAGEDIR/00-MONGO_RUN-CODE
-$RM_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RM_CTRLR_NUM -p $RM_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
+echo "     Upload $RU_STAGEDIR/00-MONGO_RUN-CODE to primary controller to facilitate mongo db queries."
+cat <<END > $RU_STAGEDIR/00-MONGO_RUN-CODE
+$RU_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RU_CTRLR_NUM -p $RU_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
 END
-juju scp -m controller $RM_STAGEDIR/00-MONGO_RUN-CODE "$RM_CTRLR_NUM":/tmp/
+juju scp -m controller $RU_STAGEDIR/00-MONGO_RUN-CODE "$RU_CTRLR_NUM":/tmp/
 
 echo "     Get model uuid from primary controller mongo db"
-cat <<END > $RM_STAGEDIR/00-MONGO_CODE
+cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
-db.models.find({"name": "$RM_MODEL_NAME"}, {"modeluuid": 1})
+db.models.find({"name": "$RU_MODEL_NAME"}, {"modeluuid": 1})
 END
-juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
-RM_MODEL_UUID=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r ._id)
-echo "===> Got $RM_MODEL_UUID"
+juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
+RU_MODEL_UUID=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r ._id)
+echo "===> Got $RU_MODEL_UUID"
 
 echo "     Get active unit password hash from primary controller mongo db"
-cat <<END > $RM_STAGEDIR/00-MONGO_CODE
+cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
-db.units.find({"_id": "${RM_MODEL_UUID}:${RM_ACTIVE_UNIT}"}, {"passwordhash":1})
+db.units.find({"_id": "${RU_MODEL_UUID}:${RU_ACTIVE_UNIT}"}, {"passwordhash":1})
 END
-juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
-RM_ACTIVE_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
-echo "===> Got $RM_ACTIVE_UNIT_PWHASH"
+juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
+RU_ACTIVE_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
+echo "===> Got $RU_ACTIVE_UNIT_PWHASH"
 
 echo "     Get isntalling unit password hash from primary controller mongo db"
-cat <<END > $RM_STAGEDIR/00-MONGO_CODE
+cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
-db.units.find({"_id": "${RM_MODEL_UUID}:${RM_INSTALLING_UNIT}"}, {"passwordhash":1})
+db.units.find({"_id": "${RU_MODEL_UUID}:${RU_INSTALLING_UNIT}"}, {"passwordhash":1})
 END
-juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
-RM_INSTALLING_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
-echo "===> Got $RM_INSTALLING_UNIT_PWHASH"
+juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
+RU_INSTALLING_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
+echo "===> Got $RU_INSTALLING_UNIT_PWHASH"
 
 echo "     Get livepatch_key from juju config for canonical-livepatch"
-RM_APPLICATION_KEY=$(juju config canonical-livepatch --format json | jq -r '.settings.livepatch_key.value')
-echo "===> Got $RM_APPLICATION_KEY"
+RU_APPLICATION_KEY=$(juju config canonical-livepatch --format json | jq -r '.settings.livepatch_key.value')
+echo "===> Got $RU_APPLICATION_KEY"
 
 echo "     Populate local environment file"
-for keyval in $(declare | grep ^RM_ | sort)
+for keyval in $(declare | grep ^RU_ | sort)
 do
   echo export $keyval
-done | tee $RM_STAGEDIR/00-LOCALENV
+done | tee $RU_STAGEDIR/00-LOCALENV

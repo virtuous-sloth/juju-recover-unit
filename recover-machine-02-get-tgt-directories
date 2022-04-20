@@ -3,65 +3,65 @@
 [[ -z "$DEBUG" ]] || set -x # Enable debugging
 set -e # exit on error to be safe
 
-if [[ -z "$RM_STAGEDIR" && -d _stage ]]
+if [[ -z "$RU_STAGEDIR" && -d _stage ]]
 then
-  export RM_STAGEDIR="_stage"
+  export RU_STAGEDIR="_stage"
 else
   echo "     Did you run recover-machine-00-set-stage?"
   exit 1
 fi
 
-if [[ -r $RM_STAGEDIR/00-FUNCTIONS && \
-        -r $RM_STAGEDIR/00-LOCALENV  ]]
+if [[ -r $RU_STAGEDIR/00-FUNCTIONS && \
+        -r $RU_STAGEDIR/00-LOCALENV  ]]
 then
-  source $RM_STAGEDIR/00-FUNCTIONS
-  source $RM_STAGEDIR/00-LOCALENV
+  source $RU_STAGEDIR/00-FUNCTIONS
+  source $RU_STAGEDIR/00-LOCALENV
 else
   echo "     Can't find all my files:"
-  ls -l $RM_STAGEDIR/00-FUNCTIONS
-  ls -l $RM_STAGEDIR/00-LOCALENV
+  ls -l $RU_STAGEDIR/00-FUNCTIONS
+  ls -l $RU_STAGEDIR/00-LOCALENV
   exit 1
 fi
 
 echo "     Archive target directories on target machine (expect and ignore 'socket ignored' warnings)"
 set +e # These are expected to error but we try anyway
-juju ssh "$RM_INSTALLING_UNIT" sudo tar -C /var/lib -c${V}f /tmp/RM_var_lib.tar \
-                                                ./juju/agents/${RM_INSTALLING_UNIT_FILENAME} \
-                                                ./juju/tools/${RM_INSTALLING_UNIT_FILENAME}
-juju ssh "$RM_INSTALLING_UNIT" sudo tar -C /etc/systemd/system -c${V}f /tmp/RM_etc_systemd_system.tar \
-                                                ./jujud-${RM_INSTALLING_UNIT_FILENAME}-exec-start.sh \
-                                                ./jujud-${RM_INSTALLING_UNIT_FILENAME}.service
-juju ssh "$RM_INSTALLING_UNIT" ls -l /tmp/RM_*.tar
+juju ssh "$RU_INSTALLING_UNIT" sudo tar -C /var/lib -c${V}f /tmp/RU_var_lib.tar \
+                                                ./juju/agents/${RU_INSTALLING_UNIT_FILENAME} \
+                                                ./juju/tools/${RU_INSTALLING_UNIT_FILENAME}
+juju ssh "$RU_INSTALLING_UNIT" sudo tar -C /etc/systemd/system -c${V}f /tmp/RU_etc_systemd_system.tar \
+                                                ./jujud-${RU_INSTALLING_UNIT_FILENAME}-exec-start.sh \
+                                                ./jujud-${RU_INSTALLING_UNIT_FILENAME}.service
+juju ssh "$RU_INSTALLING_UNIT" ls -l /tmp/RU_*.tar
 set -e
 
 echo "     Retrieve target directory archives from target machine"
-juju scp "$RM_INSTALLING_UNIT":/tmp/RM_var_lib.tar            $RM_STAGEDIR/02_TGT_BKP_var_lib.tar
-juju scp "$RM_INSTALLING_UNIT":/tmp/RM_etc_systemd_system.tar $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
-ls -l $RM_STAGEDIR/02_TGT_BKP_*.tar
+juju scp "$RU_INSTALLING_UNIT":/tmp/RU_var_lib.tar            $RU_STAGEDIR/02_TGT_BKP_var_lib.tar
+juju scp "$RU_INSTALLING_UNIT":/tmp/RU_etc_systemd_system.tar $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
+ls -l $RU_STAGEDIR/02_TGT_BKP_*.tar
 
-if [ -d $RM_STAGEDIR/02_TGT_BKP_var_lib ]
+if [ -d $RU_STAGEDIR/02_TGT_BKP_var_lib ]
 then
-  timestamp=$(stat --format %y $RM_STAGEDIR/02_TGT_BKP_var_lib | tr ' :' '_-')
-  echo "     Move old staged target backup directory $RM_STAGEDIR/02_TGT_BKP_var_lib out of the way to ${RM_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}"
-  sudo mv $RM_STAGEDIR/02_TGT_BKP_var_lib  ${RM_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}
-  ls -ld ${RM_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}
+  timestamp=$(stat --format %y $RU_STAGEDIR/02_TGT_BKP_var_lib | tr ' :' '_-')
+  echo "     Move old staged target backup directory $RU_STAGEDIR/02_TGT_BKP_var_lib out of the way to ${RU_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}"
+  sudo mv $RU_STAGEDIR/02_TGT_BKP_var_lib  ${RU_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}
+  ls -ld ${RU_STAGEDIR}/02_TGT_BKP_var_lib.${timestamp}
 fi
 
-if [ -d $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system ]
+if [ -d $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system ]
 then
-  timestamp=$(stat --format %y $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system | tr ' :' '_-')
-  echo "     Move old staged backup target directory $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system out of the way to ${RM_STAGEDIR}/02_TGT_BKP_etc_systemd_system.${timestamp}"
-  sudo mv $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
-  ls -ld  $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
+  timestamp=$(stat --format %y $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system | tr ' :' '_-')
+  echo "     Move old staged backup target directory $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system out of the way to ${RU_STAGEDIR}/02_TGT_BKP_etc_systemd_system.${timestamp}"
+  sudo mv $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
+  ls -ld  $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system.${timestamp}
 fi
 
-recover_mkdir $RM_STAGEDIR/02_TGT_BKP_var_lib
-recover_mkdir $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system
+recover_mkdir $RU_STAGEDIR/02_TGT_BKP_var_lib
+recover_mkdir $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system
 
 echo "     Extract target directories from archives"
-sudo tar -C      $RM_STAGEDIR/02_TGT_BKP_var_lib            -x${V}f $RM_STAGEDIR/02_TGT_BKP_var_lib.tar
-sudo tar -C      $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system -x${V}f $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
-echo "$RM_STAGEDIR/02_TGT_BKP_var_lib:"
-ls -l $RM_STAGEDIR/02_TGT_BKP_var_lib
-echo "$RM_STAGEDIR/02_TGT_BKP_etc_systemd_system:"
-ls -l $RM_STAGEDIR/02_TGT_BKP_etc_systemd_system
+sudo tar -C      $RU_STAGEDIR/02_TGT_BKP_var_lib            -x${V}f $RU_STAGEDIR/02_TGT_BKP_var_lib.tar
+sudo tar -C      $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system -x${V}f $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system.tar
+echo "$RU_STAGEDIR/02_TGT_BKP_var_lib:"
+ls -l $RU_STAGEDIR/02_TGT_BKP_var_lib
+echo "$RU_STAGEDIR/02_TGT_BKP_etc_systemd_system:"
+ls -l $RU_STAGEDIR/02_TGT_BKP_etc_systemd_system

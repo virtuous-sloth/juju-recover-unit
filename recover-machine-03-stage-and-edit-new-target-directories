@@ -3,73 +3,73 @@
 [[ -z "$DEBUG" ]] || set -x # Enable debugging
 set -e # exit on error to be safe
 
-if [[ -z "$RM_STAGEDIR" && -d _stage ]]
+if [[ -z "$RU_STAGEDIR" && -d _stage ]]
 then
-  export RM_STAGEDIR="_stage"
+  export RU_STAGEDIR="_stage"
 else
   echo "     Did you run recover-machine-00-set-stage?"
   exit 1
 fi
 
-if [[ -r $RM_STAGEDIR/00-FUNCTIONS && \
-        -r $RM_STAGEDIR/00-LOCALENV  ]]
+if [[ -r $RU_STAGEDIR/00-FUNCTIONS && \
+        -r $RU_STAGEDIR/00-LOCALENV  ]]
 then
-  source $RM_STAGEDIR/00-FUNCTIONS
-  source $RM_STAGEDIR/00-LOCALENV
-  env | grep RM_ | sort
+  source $RU_STAGEDIR/00-FUNCTIONS
+  source $RU_STAGEDIR/00-LOCALENV
+  env | grep RU_ | sort
 else
   echo "     Can't find all my files:"
-  ls -l $RM_STAGEDIR/00-FUNCTIONS
-  ls -l $RM_STAGEDIR/00-LOCALENV
+  ls -l $RU_STAGEDIR/00-FUNCTIONS
+  ls -l $RU_STAGEDIR/00-LOCALENV
   exit 1
 fi
 
-if [[ ! -r "$RM_STAGEDIR/01_SRC_var_lib.tar" ||   \
-      ! -r "$RM_STAGEDIR/01_SRC_etc_systemd_system.tar" ]]
+if [[ ! -r "$RU_STAGEDIR/01_SRC_var_lib.tar" ||   \
+      ! -r "$RU_STAGEDIR/01_SRC_etc_systemd_system.tar" ]]
 then
   echo "     Have you run recover-machine-01-get-src-directories?"
-  echo "     Can't find source archives in $RM_STAGEDIR"
-  ls -l $RM_STAGEDIR/01_SRC_var_lib.tar
-  ls -l $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
+  echo "     Can't find source archives in $RU_STAGEDIR"
+  ls -l $RU_STAGEDIR/01_SRC_var_lib.tar
+  ls -l $RU_STAGEDIR/01_SRC_etc_systemd_system.tar
   exit 1
 else
-  source $RM_STAGEDIR/00-FUNCTIONS
-  source $RM_STAGEDIR/00-LOCALENV
+  source $RU_STAGEDIR/00-FUNCTIONS
+  source $RU_STAGEDIR/00-LOCALENV
 fi
 
-recover_mkdir $RM_STAGEDIR/03_TGT_NEW_var_lib
-recover_mkdir $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
+recover_mkdir $RU_STAGEDIR/03_TGT_NEW_var_lib
+recover_mkdir $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system
 
 echo "     Extract source directory archives into new target directories"
-sudo tar -C $RM_STAGEDIR/03_TGT_NEW_var_lib            -x${V}f $RM_STAGEDIR/01_SRC_var_lib.tar
-sudo tar -C $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system -x${V}f $RM_STAGEDIR/01_SRC_etc_systemd_system.tar
-echo $RM_STAGEDIR/03_TGT_NEW_var_lib:
-ls -l  $RM_STAGEDIR/03_TGT_NEW_var_lib
-echo $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system:
-ls -l  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system
+sudo tar -C $RU_STAGEDIR/03_TGT_NEW_var_lib            -x${V}f $RU_STAGEDIR/01_SRC_var_lib.tar
+sudo tar -C $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system -x${V}f $RU_STAGEDIR/01_SRC_etc_systemd_system.tar
+echo $RU_STAGEDIR/03_TGT_NEW_var_lib:
+ls -l  $RU_STAGEDIR/03_TGT_NEW_var_lib
+echo $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system:
+ls -l  $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system
 
 echo "     Edit new target files"
-sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME} $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}
-sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RM_ACTIVE_UNIT_FILENAME}  $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RM_INSTALLING_UNIT_FILENAME}
-sudo sed -i "s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/g" $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}/agent.conf
-sudo sed -i "s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/g" $RM_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RM_INSTALLING_UNIT_FILENAME}/.venv/bin/activate*
-sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}-exec-start.sh $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}-exec-start.sh
-sudo mv -f  $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}.service       $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}.service
-sudo sed -i "s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/g" $RM_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RM_INSTALLING_UNIT_FILENAME}*
+sudo mv -f  $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_ACTIVE_UNIT_FILENAME} $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_INSTALLING_UNIT_FILENAME}
+sudo mv -f  $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RU_ACTIVE_UNIT_FILENAME}  $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RU_INSTALLING_UNIT_FILENAME}
+sudo sed -i "s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/g" $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_INSTALLING_UNIT_FILENAME}/agent.conf
+sudo sed -i "s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/g" $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_INSTALLING_UNIT_FILENAME}/.venv/bin/activate*
+sudo mv -f  $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_ACTIVE_UNIT_FILENAME}-exec-start.sh $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_INSTALLING_UNIT_FILENAME}-exec-start.sh
+sudo mv -f  $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_ACTIVE_UNIT_FILENAME}.service       $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_INSTALLING_UNIT_FILENAME}.service
+sudo sed -i "s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/g" $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_INSTALLING_UNIT_FILENAME}*
 
 echo "     Diff of directories"
 set +e # Temporarily don't exit on error because we expect diff to find differences
-for i in $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME}/agent.conf           \
-         $RM_STAGEDIR/01_SRC_var_lib/juju/agents/${RM_ACTIVE_UNIT_FILENAME}/.venv/bin/activate* \
-         $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}-exec-start.sh   \
-         $RM_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RM_ACTIVE_UNIT_FILENAME}.service
+for i in $RU_STAGEDIR/01_SRC_var_lib/juju/agents/${RU_ACTIVE_UNIT_FILENAME}/agent.conf           \
+         $RU_STAGEDIR/01_SRC_var_lib/juju/agents/${RU_ACTIVE_UNIT_FILENAME}/.venv/bin/activate* \
+         $RU_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RU_ACTIVE_UNIT_FILENAME}-exec-start.sh   \
+         $RU_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RU_ACTIVE_UNIT_FILENAME}.service
 do
-  j=$(echo $i | sed -e "s/01_SRC/03_TGT_NEW/; s/${RM_ACTIVE_UNIT_FILENAME}/${RM_INSTALLING_UNIT_FILENAME}/")
+  j=$(echo $i | sed -e "s/01_SRC/03_TGT_NEW/; s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/")
   sudo diff --recursive --unified --no-dereference $i $j
-done > $RM_STAGEDIR/03-diffs.log 2>&1
-echo "===> Diffs are in $RM_STAGEDIR/03-diffs.log"
+done > $RU_STAGEDIR/03-diffs.log 2>&1
+echo "===> Diffs are in $RU_STAGEDIR/03-diffs.log"
 
 echo "#### Review diffs using, for example:"
-echo "vim $RM_STAGEDIR/03-diffs.log"
+echo "vim $RU_STAGEDIR/03-diffs.log"
 echo "#### If any further edits or changes are needed, either add to this script and rerun or"
-echo "#### manually edit/change $RM_STAGEDIR/03_TGT_NEW_* files as needed and proceed with next step."
+echo "#### manually edit/change $RU_STAGEDIR/03_TGT_NEW_* files as needed and proceed with next step."
