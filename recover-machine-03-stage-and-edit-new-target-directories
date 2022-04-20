@@ -69,5 +69,7 @@ do
 done > $RM_STAGEDIR/03-diffs.log 2>&1
 echo "===> Diffs are in $RM_STAGEDIR/03-diffs.log"
 
+echo "#### Review diffs using, for example:"
+echo "vim $RM_STAGEDIR/03-diffs.log"
 echo "#### If any further edits or changes are needed, either add to this script and rerun or"
 echo "#### manually edit/change $RM_STAGEDIR/03_TGT_NEW_* files as needed and proceed with next step."
