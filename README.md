@@ -21,14 +21,14 @@ juju debug-log
 ```
 Please:
 - run script 00 and review the environment variables produced
--- this is part of the output and is also stored in \_stage/00-LOCALENV
+  - this is part of the output and is also stored in \_stage/00-LOCALENV
 ```bash
 ./recover-unit-00-set-stage default 2>&1 | tee -a 00.log
 cat _stage/00-LOCALENV
 ```
 - run scripts 01-03 indicated below, capturing and reviewing their output
 - archive the \_stage directory and the \*.log files
--- upload the archive to the case for review before continuing
+  - upload the archive to the case for review before continuing
 
 ```bash
 ./recover-unit-01-get-src-directories 2>&1 | tee -a 01.log
@@ -43,3 +43,57 @@ scripts.
 ./recover-unit-04-archive-and-upload-new-target-directories 2>&1 | tee -a 04.log
 ./recover-unit-05-recover-unit 2>&1 | tee -a 05.log
 ```
+
+# Script Documentation
+
+## recover-unit-00-set-stage
+* Takes one argument, the name of the model
+* Creates a directory for staging all work, \_stage, by default
+* When run multiple times, will rename old \_stage directory
+* Gathers information about the local environment
+* Usage:
+```
+Usage: recover-unit-00-set-stage model
+       where model is the model name to check
+
+       You can control the staging directory location:
+         export RU_STAGEDIR=_stage
+
+       You can enable debugging:
+         export DEBUG=1
+         recover-unit-00-set-stage modelname
+       or:
+         DEBUG=1 recover-unit-00-set-stage modelname
+```
+- Example environment:
+  - Active unit is a unit of the subordinate charm that is in an active state
+```
+export RU_ACTIVE_UNIT=canonical-livepatch/1
+export RU_ACTIVE_UNIT_FILENAME=unit-canonical-livepatch-1
+export RU_ACTIVE_UNIT_PWHASH=aCIe/WXewR4yMuqyHL7F2gPR
+```
+   - Application is the application of the subordinate charm that is stuck
+```bash
+export RU_APPLICATION=canonical-livepatch
+export RU_APPLICATION_KEY=2840b051faf67443a8182526dfdb216e
+export RU_CTRLR_IP=10.5.3.120
+export RU_CTRLR_NUM=0
+export RU_INSTALLING_UNIT=canonical-livepatch/0
+export RU_INSTALLING_UNIT_FILENAME=unit-canonical-livepatch-0
+export RU_INSTALLING_UNIT_PWHASH=a2Tcsel9QQbwDVFJyVa5lWUW
+export RU_MODEL_NAME=default
+export RU_MODEL_UUID=309ea7a7-00c1-415a-8d02-b62a548d4755
+export RU_MONGO_EXEC=/snap/bin/juju-db.mongo
+export RU_MONGO_PW=pXhyKcRk8nm5UCSasm1eW555
+export RU_STAGEDIR=_stage
+```
+
+## recover-unit-01-get-src-directories
+* 
+## recover-unit-02-get-tgt-directories
+
+## recover-unit-03-stage-and-edit-new-target-directories
+
+## recover-unit-04-archive-and-upload-new-target-directories
+
+## recover-unit-05-recover-unit
