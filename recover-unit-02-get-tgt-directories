@@ -23,7 +23,7 @@ else
   exit 1
 fi
 
-echo "     Archive target directories on target machine (expect and ignore 'socket ignored' warnings)"
+echo "     Archive target directories on target machine (expect and ignore 'socket ignored' or 'Cannot stat: No such file or directory' warnings)"
 set +e # These are expected to error but we try anyway
 juju ssh "$RU_INSTALLING_UNIT" sudo tar -C /var/lib -c${V}f /tmp/RU_var_lib.tar \
                                                 ./juju/agents/${RU_INSTALLING_UNIT_FILENAME} \
