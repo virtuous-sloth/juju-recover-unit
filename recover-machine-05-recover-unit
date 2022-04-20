@@ -56,3 +56,6 @@ juju ssh $RM_INSTALLING_UNIT 'sudo systemctl daemon-reload'
 juju ssh $RM_INSTALLING_UNIT "sudo systemctl enable  jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
 juju ssh $RM_INSTALLING_UNIT "sudo systemctl start   jujud-${RM_INSTALLING_UNIT_FILENAME}.service"
 
+echo "     Install and configure canonical-livepatch"
+juju ssh $RM_INSTALLING_UNIT 'sudo snap install canonical-livepatch'
+juju ssh $RM_INSTALLING_UNIT "sudo canonical-livepatch enable ${RM_APPLICATION_KEY}"
