@@ -194,6 +194,10 @@ juju scp -m controller $RM_STAGEDIR/00-MONGO_CODE "$RM_CTRLR_NUM":/tmp/
 RM_INSTALLING_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RM_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
 echo "===> Got $RM_INSTALLING_UNIT_PWHASH"
 
+echo "     Get livepatch_key from juju config for canonical-livepatch"
+RM_APPLICATION_KEY=$(juju config canonical-livepatch --format json | jq -r '.settings.livepatch_key.value')
+echo "===> Got $RM_APPLICATION_KEY"
+
 echo "     Populate local environment file"
 for keyval in $(declare | grep ^RM_ | sort)
 do
