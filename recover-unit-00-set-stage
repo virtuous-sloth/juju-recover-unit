@@ -185,7 +185,7 @@ juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
 RU_ACTIVE_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
 echo "===> Got $RU_ACTIVE_UNIT_PWHASH"
 
-echo "     Get isntalling unit password hash from primary controller mongo db"
+echo "     Get installing unit password hash from primary controller mongo db"
 cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
 db.units.find({"_id": "${RU_MODEL_UUID}:${RU_INSTALLING_UNIT}"}, {"passwordhash":1})
@@ -195,7 +195,8 @@ RU_INSTALLING_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bas
 echo "===> Got $RU_INSTALLING_UNIT_PWHASH"
 
 echo "     Get livepatch_key from juju config for canonical-livepatch"
-RU_APPLICATION_KEY=$(juju config canonical-livepatch --format json | jq -r '.settings.livepatch_key.value')
+########## WARNING HARDCODED to canonical-livepatch ##########
+RU_APPLICATION_KEY=$(juju config $RU_APPLICATION --format json | jq -r '.settings.livepatch_key.value')
 echo "===> Got $RU_APPLICATION_KEY"
 
 echo "     Populate local environment file"
