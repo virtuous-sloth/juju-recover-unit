@@ -25,12 +25,12 @@ ceph-osd/2                active    idle        5        10.0.3.114             
   canonical-livepatch/0   waiting   allocating           10.0.3.114             installing agent
 
 Machine  State    DNS         Inst id                               Series  AZ    Message
-0        started  10.0.3.234  115a05b8-998b-4097-9611-05f8d2bdcb89  focal   east  ACTIVE
-1        started  10.0.1.107  a6a4201b-3888-4f6d-b111-30109a163783  focal   east  ACTIVE
-2        started  10.0.0.12   12203729-274b-4d10-9e63-c67240dffc39  focal   east  ACTIVE
-3        started  10.0.0.127  656a510a-5a46-4ffc-b55d-9b585f8b132e  focal   east  ACTIVE
-4        started  10.0.2.2    3e2bea10-8a25-4d52-b482-79e8341eab2d  focal   east  ACTIVE
-5        started  10.0.3.114  297d9cd1-64c1-4395-b1cd-82b7459aa893  focal   east  ACTIVE
+0        started  10.0.3.234  115a05b8-998b-4097-9611-05f8d2bdcb89  focal   az1   ACTIVE
+1        started  10.0.1.107  a6a4201b-3888-4f6d-b111-30109a163783  focal   az1   ACTIVE
+2        started  10.0.0.12   12203729-274b-4d10-9e63-c67240dffc39  focal   az1   ACTIVE
+3        started  10.0.0.127  656a510a-5a46-4ffc-b55d-9b585f8b132e  focal   az1   ACTIVE
+4        started  10.0.2.2    3e2bea10-8a25-4d52-b482-79e8341eab2d  focal   az1   ACTIVE
+5        started  10.0.3.114  297d9cd1-64c1-4395-b1cd-82b7459aa893  focal   az1   ACTIVE
 ```
 
 # Script Documentation
@@ -74,7 +74,7 @@ export RU_APPLICATION_KEY=2840b051faf67443a8182526dfdb216e
 - Juju controller:
   - The code tries to get the primary controller for R/W MongoDB tasks
 ```bash
-export RU_CTRLR_IP=10.5.3.120
+export RU_CTRLR_IP=10.0.3.120
 export RU_CTRLR_NUM=0
 ```
 - Installing unit is the one stuck:
@@ -99,14 +99,37 @@ export RU_STAGEDIR=_stage
 ```
 
 ## recover-unit-01-get-src-directories
--  
+-  archives the active unit-specific files and directories from a source machine that has an active unit for the affected subordinate charm
+-  archives are relative to /etc/systemd/system and /var/lib/juju directories but only include unit-specific content
+-  archives are retrieved back to the local stage directory (\_stage) with 01_SRC_* prefixes
+-  archives are extracted to the local stage directory with 01_SRC_* prefixes
+
 ## recover-unit-02-get-tgt-directories
+-  archives unit-specific files and directories from a target machine that has a stalled/installing unit for the affected subordinate charm
+-  archives are relative to /etc/systemd/system and /var/lib/juju but only include unit-specific content
+-  archives are retrieved back to the local stage directory (\_stage) with 02_TGT_BKP_* prefixes
+-  archives are extracted to the local stage directory with 02_TGT_BKP_* prefixes
+-  note that it is likely the unit charm directory is missing and thus the archive will show errors
 
 ## recover-unit-03-stage-and-edit-new-target-directories
+- extracts the active unit archive into \_stage/03_TGT_NEW_* directories
+- deletes unneeded files and subdirectories
+- moves/renames files/directories from the source unit name to the target unit name
+- edits the contents of files where the content self-references the unit name
 
 ## recover-unit-04-archive-and-upload-new-target-directories
+- archives the staged new target directories and uploads them to the target machine in preaparation for recovery
 
 ## recover-unit-05-recover-unit
+- stops and disables the installing unit systemd unit (these are likely already stopped and disabled)
+- extracts the edited archives to the appropriate target directories
+- updates the target unit password hash in the MongoDB to match the password in it's agent.conf
+- enables and starts the installing unit systemd unit
+  - at this point the juju unit will essentially be recovered
+  - however, it will not understand that the canonical-livepatch application has not been installed
+  - it will show this by not obtaining any kernel livepatch information
+- installs and configures canonical-livepatch
+  - it may take up to two 5-minute update-status cycles for the juju agent to pick up the canonical-livepatch status
 
 # Running the Scripts
 
@@ -133,7 +156,7 @@ Please:
 - run script 00 and review the environment variables produced
   - this is part of the output and is also stored in \_stage/00-LOCALENV
 ```bash
-./recover-unit-00-set-stage default 2>&1 | tee -a 00.log
+./recover-unit-00-set-stage default 2>&1 | tee -a _stage/00.log
 cat _stage/00-LOCALENV
 ```
 - run scripts 01-03 indicated below, capturing and reviewing their output
@@ -141,15 +164,15 @@ cat _stage/00-LOCALENV
   - upload the archive to the case for review before continuing
 
 ```bash
-./recover-unit-01-get-src-directories 2>&1 | tee -a 01.log
-./recover-unit-02-get-tgt-directories 2>&1 | tee -a 02.log
-./recover-unit-03-stage-and-edit-new-target-directories 2>&1 | tee -a 03.log
+./recover-unit-01-get-src-directories 2>&1 | tee -a _stage/01.log
+./recover-unit-02-get-tgt-directories 2>&1 | tee -a _stage/02.log
+./recover-unit-03-stage-and-edit-new-target-directories 2>&1 | tee -a _stage/03.log
 vim _stage/03-diffs.log
 ```
 Only run the following when confident about the results of the previous four
 scripts.
 
 ```bash
-./recover-unit-04-archive-and-upload-new-target-directories 2>&1 | tee -a 04.log
-./recover-unit-05-recover-unit 2>&1 | tee -a 05.log
+./recover-unit-04-archive-and-upload-new-target-directories 2>&1 | tee -a _stage/04.log
+./recover-unit-05-recover-unit 2>&1 | tee -a _stage/05.log
 ```
