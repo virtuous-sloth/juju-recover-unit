@@ -1,3 +1,38 @@
+# Introduction
+These scripts are intended to complete the failed installation of the juju
+unit for a subordinate charm. 
+
+Here is an example of the juju status output in this state with canonical-livepatch/0
+unit showing an 'installing agent' message:
+```
+Model    Controller  Cloud/Region       Version  SLA          Timestamp
+default  ctrlr       ostack/ostack      2.8.11   unsupported  02:22:13Z
+
+App                  Version  Status   Scale  Charm                Store       Rev  OS      Notes
+canonical-livepatch           waiting    2/3  canonical-livepatch  jujucharms   46  ubuntu  
+ceph-mon             15.2.14  active       3  ceph-mon             jujucharms   62  ubuntu  
+ceph-osd             15.2.14  active       3  ceph-osd             jujucharms  316  ubuntu  
+
+Unit                      Workload  Agent       Machine  Public address  Ports  Message
+ceph-mon/0*               active    idle        0        10.0.3.234             Unit is ready and clustered
+ceph-mon/1                active    idle        1        10.0.1.107             Unit is ready and clustered
+ceph-mon/2                active    idle        2        10.0.0.12              Unit is ready and clustered
+ceph-osd/0*               active    idle        3        10.0.0.127             Unit is ready (2 OSD)
+  canonical-livepatch/2*  active    idle                 10.0.0.127             Running kernel 5.4.0-107.121-generic, patchState: nothing-to-apply (source version/commit af49c31)
+ceph-osd/1                active    idle        4        10.0.2.2               Unit is ready (2 OSD)
+  canonical-livepatch/1   active    idle                 10.0.2.2               Running kernel 5.4.0-107.121-generic, patchState: nothing-to-apply (source version/commit af49c31)
+ceph-osd/2                active    idle        5        10.0.3.114             Unit is ready (2 OSD)
+  canonical-livepatch/0   waiting   allocating           10.0.3.114             installing agent
+
+Machine  State    DNS         Inst id                               Series  AZ    Message
+0        started  10.0.3.234  115a05b8-998b-4097-9611-05f8d2bdcb89  focal   east  ACTIVE
+1        started  10.0.1.107  a6a4201b-3888-4f6d-b111-30109a163783  focal   east  ACTIVE
+2        started  10.0.0.12   12203729-274b-4d10-9e63-c67240dffc39  focal   east  ACTIVE
+3        started  10.0.0.127  656a510a-5a46-4ffc-b55d-9b585f8b132e  focal   east  ACTIVE
+4        started  10.0.2.2    3e2bea10-8a25-4d52-b482-79e8341eab2d  focal   east  ACTIVE
+5        started  10.0.3.114  297d9cd1-64c1-4395-b1cd-82b7459aa893  focal   east  ACTIVE
+```
+
 # Script Documentation
 Only the first script (00) takes an argument, the model. It gathers all the
 local information needed by the remaining scripts.
