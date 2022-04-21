@@ -43,7 +43,7 @@ echo "     Extract archived directories"
 juju ssh $RU_INSTALLING_UNIT 'sudo tar -x${V}f /tmp/04_TGT_NEW_var_lib.tar            -C /var/lib            --skip-old-files --keep-directory-symlink --dereference'
 juju ssh $RU_INSTALLING_UNIT 'sudo tar -x${V}f /tmp/04_TGT_NEW_etc_systemd_system.tar -C /etc/systemd/system --skip-old-files --keep-directory-symlink --dereference'
 
-echo "     Update unit password"
+echo "     Update installing unit password hash in MongoDB"
 cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
 db.units.update({"_id": "${RU_MODEL_UUID}:${RU_INSTALLING_UNIT}"}, {\$set:{"passwordhash": "$RU_ACTIVE_UNIT_PWHASH"}})
