@@ -58,5 +58,5 @@ juju ssh $RU_INSTALLING_UNIT "sudo systemctl start   jujud-${RU_INSTALLING_UNIT_
 
 echo "     Install and configure canonical-livepatch"
 ########## WARNING SOMEWHAT HARDCODED to canonical-livepatch syntax ##########
-juju ssh $RU_INSTALLING_UNIT 'sudo snap install ${RU_APPLICATION}'
+juju ssh $RU_INSTALLING_UNIT "sudo snap install ${RU_APPLICATION}"
 juju ssh $RU_INSTALLING_UNIT "sudo ${RU_APPLICATION} enable ${RU_APPLICATION_KEY}"
