@@ -2,3 +2,5 @@ _*
 os_*
 status.json
 rodrigo/recover_machine_agents.py
+log
+*log
