@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 [[ -z "$DEBUG" ]] || set -x # Enable debugging
 set -e # exit on error to be safe
@@ -30,6 +30,7 @@ juju ssh "$RU_ACTIVE_UNIT" sudo tar -C /var/lib -c${V}f /tmp/RU_var_lib.tar \
 juju ssh "$RU_ACTIVE_UNIT" sudo tar -C /etc/systemd/system -c${V}f /tmp/RU_etc_systemd_system.tar \
                                             ./jujud-${RU_ACTIVE_UNIT_FILENAME}-exec-start.sh \
                                             ./jujud-${RU_ACTIVE_UNIT_FILENAME}.service
+juju ssh "$RU_ACTIVE_UNIT" sudo chmod 644 /tmp/RU_var_lib.tar /tmp/RU_etc_systemd_system.tar
 juju ssh "$RU_ACTIVE_UNIT" ls -l /tmp/RU_*.tar
 
 echo "     Retrieve active unit directory archives"

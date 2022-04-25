@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 [[ -z "$DEBUG" ]] || set -x # Enable debugging
 set -e # exit on error to be safe

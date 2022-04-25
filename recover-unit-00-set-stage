@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 [[ -z "$DEBUG" ]] || set -x # Enable debugging
 set -e # exit on error to be safe
@@ -14,7 +14,7 @@ fi
 
 if [ "$#" -ne 1 ]; then
   cat <<-USAGE 1>&2
-	Usage: $scriptname model
+	Usage: $scriptname model controller_model
 	       where model is the model name to check
 	
 	       You can control the staging directory location:
@@ -30,6 +30,7 @@ if [ "$#" -ne 1 ]; then
 else
   echo "     Get model name"
   RU_MODEL_NAME=$1
+  RU_CTRL_MODEL_NAME=$2
   echo "===> Got $RU_MODEL_NAME"
 fi
 echo "     Switch Juju to $RU_MDOEL_NAME"
@@ -102,20 +103,20 @@ RU_ACTIVE_UNIT_FILENAME=unit-$(echo $RU_ACTIVE_UNIT | tr / -)
 RU_INSTALLING_UNIT_FILENAME=unit-$(echo $RU_INSTALLING_UNIT | tr / -)
 
 echo "     Get first started controller num"
-RU_CTRLR_NUM=$(juju machines -m controller | awk '/started/{print $1}' | head -n1) # grab first started controller _NUM
+RU_CTRLR_NUM=$(juju machines -m ${RU_CTRL_MODEL_NAME} | awk '/started/{print $1}' | head -n1) # grab first started controller _NUM
 echo "===> Got $RU_CTRLR_NUM"
 
 echo "     Get first controller mongo password"
-RU_MONGO_PW=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
+RU_MONGO_PW=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
 echo "===> Got $RU_MONGO_PW"
 
 echo "     Get first controller mongo client executable using executable name mongo"
-RU_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM which mongo | tr -d '\r')
+RU_MONGO_EXEC=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM which mongo | tr -d '\r')
 if [[ -z "$RU_MONGO_EXEC" ]]
 then
   echo "===> Mongo client executable not found with name 'mongo'"
   echo "     Get first controller mongo client executable using executable name juju-db.mongo"
-  RU_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM which juju-db.mongo | tr -d '\r')
+  RU_MONGO_EXEC=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM which juju-db.mongo | tr -d '\r')
   if [[ -z "$RU_MONGO_EXEC" ]]
   then
     echo "Failed to find mongo client executable."
@@ -128,32 +129,32 @@ echo "     Upload RU_STAGEDIR/00-MONGO_RUN-CODE to first controller to facilitat
 cat <<END > $RU_STAGEDIR/00-MONGO_RUN-CODE
 $RU_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RU_CTRLR_NUM -p $RU_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
 END
-juju scp -m controller $RU_STAGEDIR/00-MONGO_RUN-CODE "$RU_CTRLR_NUM":/tmp/
+juju scp -m ${RU_CTRL_MODEL_NAME} $RU_STAGEDIR/00-MONGO_RUN-CODE "$RU_CTRLR_NUM":/tmp/
 
 echo "     Get primary controller IP from first controller mongo db"
 cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
 rs.isMaster()['primary']
 END
-juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
-RU_CTRLR_IP=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1 | awk -F: '{print $1}')
+juju scp -m ${RU_CTRL_MODEL_NAME} $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
+RU_CTRLR_IP=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tail -n 2 | head -n 1 | awk -F: '{print $1}')
 echo "===> Got $RU_CTRLR_IP"
 
 echo "     Get primary controller num"
-RU_CTRLR_NUM=$(juju machines -m controller | awk -v ip=$RU_CTRLR_IP '$0 ~ ip {print $1}' | head -n1) # grab primary controller NUM using IP
+RU_CTRLR_NUM=$(juju machines -m ${RU_CTRL_MODEL_NAME} | awk -v ip=$RU_CTRLR_IP '$0 ~ ip {print $1}' | head -n1) # grab primary controller NUM using IP
 echo "===> Got $RU_CTRLR_NUM"
 
 echo "     Get primary controller mongo password"
-RU_MONGO_PW=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
+RU_MONGO_PW=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine-${RU_CTRLR_NUM}/agent.conf" | tr -d '\r')
 echo "===> Got $RU_MONGO_PW"
 
 echo "     Get primary controller mongo client executable using executable name mongo"
-RU_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM which mongo | tr -d '\r')
+RU_MONGO_EXEC=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM which mongo | tr -d '\r')
 if [[ -z "$RU_MONGO_EXEC" ]]
 then
   echo "===> Mongo client executable not found with name 'mongo'"
   echo "     Get first controller mongo client executable using executable name juju-db.mongo"
-  RU_MONGO_EXEC=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM which juju-db.mongo | tr -d '\r')
+  RU_MONGO_EXEC=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM which juju-db.mongo | tr -d '\r')
   if [[ -z "$RU_MONGO_EXEC" ]]
   then
     echo "Failed to find mongo client executable."
@@ -166,15 +167,15 @@ echo "     Upload $RU_STAGEDIR/00-MONGO_RUN-CODE to primary controller to facili
 cat <<END > $RU_STAGEDIR/00-MONGO_RUN-CODE
 $RU_MONGO_EXEC -port 37017 --sslAllowInvalidCertificates --ssl --authenticationDatabase admin -u machine-$RU_CTRLR_NUM -p $RU_MONGO_PW juju </tmp/00-MONGO_CODE 2>/dev/null
 END
-juju scp -m controller $RU_STAGEDIR/00-MONGO_RUN-CODE "$RU_CTRLR_NUM":/tmp/
+juju scp -m ${RU_CTRL_MODEL_NAME} $RU_STAGEDIR/00-MONGO_RUN-CODE "$RU_CTRLR_NUM":/tmp/
 
 echo "     Get model uuid from primary controller mongo db"
 cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
 db.models.find({"name": "$RU_MODEL_NAME"}, {"modeluuid": 1})
 END
-juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
-RU_MODEL_UUID=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r ._id)
+juju scp -m ${RU_CTRL_MODEL_NAME} $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
+RU_MODEL_UUID=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r ._id)
 echo "===> Got $RU_MODEL_UUID"
 
 echo "     Get active unit password hash from primary controller mongo db"
@@ -182,8 +183,8 @@ cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
 db.units.find({"_id": "${RU_MODEL_UUID}:${RU_ACTIVE_UNIT}"}, {"passwordhash":1})
 END
-juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
-RU_ACTIVE_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
+juju scp -m ${RU_CTRL_MODEL_NAME} $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
+RU_ACTIVE_UNIT_PWHASH=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
 echo "===> Got $RU_ACTIVE_UNIT_PWHASH"
 
 echo "     Get installing unit password hash from primary controller mongo db"
@@ -191,8 +192,8 @@ cat <<END > $RU_STAGEDIR/00-MONGO_CODE
 use juju
 db.units.find({"_id": "${RU_MODEL_UUID}:${RU_INSTALLING_UNIT}"}, {"passwordhash":1})
 END
-juju scp -m controller $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
-RU_INSTALLING_UNIT_PWHASH=$(juju ssh -m controller ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
+juju scp -m ${RU_CTRL_MODEL_NAME} $RU_STAGEDIR/00-MONGO_CODE "$RU_CTRLR_NUM":/tmp/
+RU_INSTALLING_UNIT_PWHASH=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM sudo bash /tmp/00-MONGO_RUN-CODE | tr -d '\r' | egrep '^{' | jq -r .passwordhash)
 echo "===> Got $RU_INSTALLING_UNIT_PWHASH"
 
 echo "     Get livepatch_key from juju config for canonical-livepatch"
