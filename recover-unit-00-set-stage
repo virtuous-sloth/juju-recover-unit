@@ -76,23 +76,24 @@ echo "===> Got $RU_APPLICATION"
 
 echo "     Get unit that is stuck installing from $RU_STAGEDIR/00-status.json"
 RU_INSTALLING_UNIT=$(cat $RU_STAGEDIR/00-status.json \
-             | jq -r '.applications[]?.units[]? 
-                      | select(.subordinates != null) 
-                      | .subordinates 
-                      | {unit: keys[], message: .[]."workload-status".message}
-                      | select(.message=="installing agent") | .unit
+             | jq -r '.applications[]?.units[]?
+                      | select(.subordinates != null)
+                      | .subordinates
+                      | to_entries[] | {unit: (.key), message:(.value | ."workload-status".message)}
+                      | select(.message=="installing agent").unit
                      ' \
              )
 echo "===> Got $RU_INSTALLING_UNIT"
 
 echo "     Get active unit that is from $RU_STAGEDIR/00-status.json"
 RU_ACTIVE_UNIT=$(cat $RU_STAGEDIR/00-status.json \
-             | jq -r '.applications[]?.units[]? 
-                      | select(.subordinates != null) 
-                      | .subordinates 
-                      | {unit: keys[], current: .[]."workload-status".current}
-                      | select(.current=="active") | .unit
-                     ' \
+             | jq -r ".applications[]?.units[]?
+                      | select(.subordinates != null)
+                      | .subordinates
+                      | to_entries[] | {unit: (.key), current:(.value | .\"workload-status\".current)}
+                      | select(.unit | test(\"^$RU_APPLICATION\"))
+                      | select(.current==\"active\").unit
+                      " \
              | tail -1 \
              )
 echo "===> Got $RU_ACTIVE_UNIT"
