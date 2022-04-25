@@ -85,7 +85,7 @@ RU_INSTALLING_UNIT=$(cat $RU_STAGEDIR/00-status.json \
              )
 echo "===> Got $RU_INSTALLING_UNIT"
 
-echo "     Get unit that is from $RU_STAGEDIR/00-status.json"
+echo "     Get active unit that is from $RU_STAGEDIR/00-status.json"
 RU_ACTIVE_UNIT=$(cat $RU_STAGEDIR/00-status.json \
              | jq -r '.applications[]?.units[]? 
                       | select(.subordinates != null) 
