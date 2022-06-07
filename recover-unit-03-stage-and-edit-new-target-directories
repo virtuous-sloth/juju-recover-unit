@@ -52,10 +52,13 @@ echo "     Edit new target files"
 sudo mv -f  $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_ACTIVE_UNIT_FILENAME} $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_INSTALLING_UNIT_FILENAME}
 sudo mv -f  $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RU_ACTIVE_UNIT_FILENAME}  $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/tools/${RU_INSTALLING_UNIT_FILENAME}
 sudo sed -i "s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/g" $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_INSTALLING_UNIT_FILENAME}/agent.conf
+sudo sed -i "s:${RU_ACTIVE_UNIT}:${RU_INSTALLING_UNIT}:g"                   $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_INSTALLING_UNIT_FILENAME}/agent.conf
 sudo sed -i "s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/g" $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_INSTALLING_UNIT_FILENAME}/.venv/bin/activate*
+sudo sed -i "s:${RU_ACTIVE_UNIT}:${RU_INSTALLING_UNIT}:g"                   $RU_STAGEDIR/03_TGT_NEW_var_lib/juju/agents/${RU_INSTALLING_UNIT_FILENAME}/.venv/bin/activate*
 sudo mv -f  $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_ACTIVE_UNIT_FILENAME}-exec-start.sh $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_INSTALLING_UNIT_FILENAME}-exec-start.sh
 sudo mv -f  $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_ACTIVE_UNIT_FILENAME}.service       $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_INSTALLING_UNIT_FILENAME}.service
 sudo sed -i "s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/g" $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_INSTALLING_UNIT_FILENAME}*
+sudo sed -i "s:${RU_ACTIVE_UNIT}:${RU_INSTALLING_UNIT}:g"                   $RU_STAGEDIR/03_TGT_NEW_etc_systemd_system/jujud-${RU_INSTALLING_UNIT_FILENAME}*
 
 echo "     Diff of directories"
 set +e # Temporarily don't exit on error because we expect diff to find differences
