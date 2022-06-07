@@ -12,7 +12,7 @@ else
   exit 1
 fi
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -lt 1 ]; then
   cat <<-USAGE 1>&2
 	Usage: $scriptname model controller_model
 	       where model is the model name to check
@@ -39,6 +39,11 @@ juju switch $RU_MODEL_NAME
 if [[ -z "$RU_STAGEDIR" ]]
 then
   export RU_STAGEDIR="_stage"
+fi
+
+if [[ -z "$RU_CTRL_MODEL_NAME" ]]
+then
+  RU_CTRL_MODEL_NAME="controller"
 fi
 
 # Define functions here:
@@ -107,7 +112,7 @@ RU_CTRLR_NUM=$(juju machines -m ${RU_CTRL_MODEL_NAME} | awk '/started/{print $1}
 echo "===> Got $RU_CTRLR_NUM"
 
 echo "     Get first controller mongo password"
-RU_MONGO_PW=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine*/agent.conf" | tr -d '\r')
+RU_MONGO_PW=$(juju ssh -m ${RU_CTRL_MODEL_NAME} ubuntu@$RU_CTRLR_NUM "sudo awk '/^apipassword:/ {print \$2}' /var/lib/juju/agents/machine-${RU_CTRLR_NUM}/agent.conf" | tr -d '\r')
 echo "===> Got $RU_MONGO_PW"
 
 echo "     Get first controller mongo client executable using executable name mongo"
