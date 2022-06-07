@@ -70,6 +70,7 @@ do
   j=$(echo $i | sed -e "s/01_SRC/03_TGT_NEW/; s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/g")
   sudo diff --recursive --unified --no-dereference $i $j
 done > $RU_STAGEDIR/03-diffs.log 2>&1
+set -e
 echo "===> Diffs are in $RU_STAGEDIR/03-diffs.log"
 
 echo "#### Review diffs using, for example:"
