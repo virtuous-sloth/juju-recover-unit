@@ -64,7 +64,7 @@ for i in $RU_STAGEDIR/01_SRC_var_lib/juju/agents/${RU_ACTIVE_UNIT_FILENAME}/agen
          $RU_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RU_ACTIVE_UNIT_FILENAME}-exec-start.sh   \
          $RU_STAGEDIR/01_SRC_etc_systemd_system/jujud-${RU_ACTIVE_UNIT_FILENAME}.service
 do
-  j=$(echo $i | sed -e "s/01_SRC/03_TGT_NEW/; s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/")
+  j=$(echo $i | sed -e "s/01_SRC/03_TGT_NEW/; s/${RU_ACTIVE_UNIT_FILENAME}/${RU_INSTALLING_UNIT_FILENAME}/g")
   sudo diff --recursive --unified --no-dereference $i $j
 done > $RU_STAGEDIR/03-diffs.log 2>&1
 echo "===> Diffs are in $RU_STAGEDIR/03-diffs.log"
